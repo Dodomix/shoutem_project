@@ -26,3 +26,8 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+#contentIframe {
+  width: 500px;
+  height: 400px;
+}
