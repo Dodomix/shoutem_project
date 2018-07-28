@@ -16,6 +16,12 @@ app.use((req, res, next) => {
 });
 
 let text = 'Hello world! :)';
+let style = {
+  'font-size': '20px',
+  'font-style': 'normal',
+  'color': 'black',
+  'font-family': 'sans-serif',
+};
 
 app.get('/api/text', (req, res) => {
   res.send({
@@ -38,8 +44,23 @@ app.post('/api/text', (req, res) => {
     if (body.action === 'MODIFY_CONTENT') {
      text = body.newContent;
     }
+    if (body.action === 'MODIFY_STYLE') {
+      style = {
+        fontFamily: body.newStyle.font,
+        fontSize: body.newStyle.fontSize,
+        color: body.newStyle.color
+      };
+      if (body.newStyle.fontStyle.type === 'style') {
+        style.fontStyle = body.newStyle.fontStyle.value;
+      } else if (body.newStyle.fontStyle.type === 'decoration') {
+        style.textDecoration = body.newStyle.fontStyle.value;
+      } else if (body.newStyle.fontStyle.type === 'weight') {
+        style.fontWeight = body.newStyle.fontStyle.value;
+      }
+    }
     res.send({
-      text: text
+      text: text,
+      style: style
     });
   }
 });

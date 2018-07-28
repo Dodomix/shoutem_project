@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 
 class ContentEditor extends Component {
@@ -56,7 +55,7 @@ class ContentEditor extends Component {
   render() {
     return (
       <div className="ContentEditor">
-        <div>Preview:</div>
+        <div>Preview</div>
         <div>{this.state.text}</div>
         <div>Edit text content</div>
         <textarea id="updatedText" ref="updatedText" placeholder="New text content"></textarea>

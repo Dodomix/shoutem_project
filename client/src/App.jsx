@@ -4,6 +4,7 @@ import './App.css';
 class App extends Component {
   state = {
     text: '',
+    style: {},
     selectedIframe: 'content-editor',
     iframeData: {
       'content-editor': {
@@ -42,7 +43,8 @@ class App extends Component {
           body: JSON.stringify(data)
         }).then(body => {
           this.setState({
-            text: body.text
+            text: body.text,
+            style: body.style
           });
           if (this.state.iframeLoaded) {
             this._postMessageToCurrentIframeComponent({
@@ -105,7 +107,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <div className="text">{this.state.text}</div>
+        <div className="text" style={this.state.style}>{this.state.text}</div>
         <button onClick={this.reset}>Reset</button>
         <div onClick={() => this.setState({selectedIframe: 'content-editor', iframeLoaded: false})}>Content Editor</div>
         <div onClick={() => this.setState({selectedIframe: 'style-editor', iframeLoaded: false})}>Style Editor</div>
