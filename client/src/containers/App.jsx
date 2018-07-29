@@ -3,20 +3,9 @@ import App from '../components/App';
 import {
   selectIframe,
   setIframeLoaded,
-  textRequest,
-  receivedText,
-  receivedFetchTextError,
-  receivedPostTextError
+  fetchText,
+  postText
 } from '../actions';
-
-const callApi = async (path, options) => {
-  const response = await fetch(`http://localhost:5000${path}`, options);
-  const body = await response.json();
-
-  if (response.status !== 200) throw Error(body.message);
-
-  return body;
-};
 
 const mapStateToProps = state => {
   return {
@@ -35,34 +24,9 @@ const mapDispatchToProps = dispatch => {
   return {
     selectIframe: selectedIframe => dispatch(selectIframe(selectedIframe)),
     reset: () => {},
-    setIframeLoaded: loaded => {
-      dispatch(setIframeLoaded(loaded));
-    },
-    fetchText: () => {
-      dispatch(textRequest());
-      return callApi('/api/text').then(body => {
-        dispatch(receivedText(body.text, body.style));
-      }).catch(err => {
-        console.log(err);
-        dispatch(receivedFetchTextError(err));
-      });
-    },
-    postText: data => {
-      dispatch(textRequest());
-      return callApi('/api/text', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      }).then(body => {
-        dispatch(receivedText(body.text, body.style));
-      }).catch(err => {
-        console.log(err);
-        dispatch(receivedPostTextError(err));
-      });
-    }
+    setIframeLoaded: loaded => dispatch(setIframeLoaded(loaded)),
+    fetchText: () => dispatch(fetchText()),
+    postText: data => dispatch(postText(data))
   };
 };
 

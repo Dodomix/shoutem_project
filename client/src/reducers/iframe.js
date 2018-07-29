@@ -1,7 +1,7 @@
 import {
   SELECT_IFRAME,
   SET_IFRAME_LOADED
-} from '../actions';
+} from '../actions/actionConstants';
 
 const initialState = {
   selectedIframe: 'content-editor',

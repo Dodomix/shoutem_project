@@ -22,7 +22,8 @@ class App extends Component {
           if (this.props.iframeLoaded) {
             this._postMessageToCurrentIframeComponent({
               type: 'text-update',
-              text: this.props.text
+              text: this.props.text,
+              style: this.props.style
             });
           }
         });
@@ -32,18 +33,20 @@ class App extends Component {
 
   componentDidMount() {
     this.iframeComponent.current.addEventListener('load', () => {
-      this.props.setIframeLoaded(true);
       this._postMessageToCurrentIframeComponent({
         type: 'register',
-        text: this.props.text
-      })
+        text: this.props.text,
+        style: this.props.style
+      });
+      this.props.setIframeLoaded(true);
     });
 
     this.props.fetchText().then(() => {
       if (this.props.iframeLoaded) {
         this._postMessageToCurrentIframeComponent({
           type: 'text-update',
-          text: this.props.text
+          text: this.props.text,
+          style: this.props.style
         });
       }
     });

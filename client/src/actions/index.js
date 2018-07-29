@@ -1,11 +1,4 @@
-import React from "react";
-
-export const SELECT_IFRAME = 'SELECT_IFRAME';
-export const SET_IFRAME_LOADED = 'SET_IFRAME_LOADED';
-export const TEXT_REQUEST = 'TEXT_REQUEST';
-export const TEXT_RESPONSE = 'TEXT_RESPONSE';
-export const FETCH_TEXT_FAILED = 'FETCH_TEXT_FAILED';
-export const POST_TEXT_FAILED = 'POST_TEXT_FAILED';
+import {SELECT_IFRAME, SET_IFRAME_LOADED, TEXT_REQUEST, TEXT_RESPONSE, FETCH_TEXT_FAILED, POST_TEXT_FAILED} from './actionConstants';
 
 export const selectIframe = selectedIframe => ({
   type: SELECT_IFRAME,
@@ -36,3 +29,43 @@ export const receivedPostTextError = err => ({
   type: POST_TEXT_FAILED,
   err
 });
+
+const callApi = async (path, options) => {
+  const response = await fetch(`http://localhost:5000${path}`, options);
+  const body = await response.json();
+
+  if (response.status !== 200) throw Error(body.message);
+
+  return body;
+};
+
+export const fetchText = () => {
+  return dispatch => {
+    dispatch(textRequest());
+    return callApi('/api/text').then(body => {
+      dispatch(receivedText(body.text, body.style));
+    }).catch(err => {
+      console.log(err);
+      dispatch(receivedFetchTextError(err));
+    });
+  };
+};
+
+export const postText = data => {
+  return dispatch => {
+    dispatch(textRequest());
+    return callApi('/api/text', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }).then(body => {
+      dispatch(receivedText(body.text, body.style));
+    }).catch(err => {
+      console.log(err);
+      dispatch(receivedPostTextError(err));
+    });
+  };
+};

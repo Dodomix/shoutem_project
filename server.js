@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const bodyParser = require('body-parser');
+
 const pub = fs.readFileSync('public.pem');
 
 const app = express();
@@ -17,15 +18,16 @@ app.use((req, res, next) => {
 
 let text = 'Hello world! :)';
 let style = {
-  'font-size': '20px',
-  'font-style': 'normal',
+  'fontSize': 20,
+  'fontStyle': 'italic',
   'color': 'black',
-  'font-family': 'sans-serif',
+  'fontFamily': 'Arial',
 };
 
 app.get('/api/text', (req, res) => {
   res.send({
-    text: text
+    text: text,
+    style: style
   });
 });
 
@@ -46,15 +48,15 @@ app.post('/api/text', (req, res) => {
     }
     if (body.action === 'MODIFY_STYLE') {
       style = {
-        fontFamily: body.newStyle.font,
+        fontFamily: body.newStyle.fontFamily,
         fontSize: body.newStyle.fontSize,
         color: body.newStyle.color
       };
-      if (body.newStyle.fontStyle.type === 'style') {
+      if (body.newStyle.fontStyle.type === 'fontStyle') {
         style.fontStyle = body.newStyle.fontStyle.value;
-      } else if (body.newStyle.fontStyle.type === 'decoration') {
+      } else if (body.newStyle.fontStyle.type === 'textDecoration') {
         style.textDecoration = body.newStyle.fontStyle.value;
-      } else if (body.newStyle.fontStyle.type === 'weight') {
+      } else if (body.newStyle.fontStyle.type === 'fontWeight') {
         style.fontWeight = body.newStyle.fontStyle.value;
       }
     }
