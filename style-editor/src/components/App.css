@@ -2,57 +2,57 @@
   text-align: center;
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
+.label {
+  display: inline-block;
+  width: 35%;
+  text-align: right;
+  font-size: 12px;
+  vertical-align: center;
+  color: rgba(0, 0, 0, 0.54);
 }
 
-.App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
-  color: white;
+.text {
+  width: 56%;
+  display: inline-block;
+  text-align: left;
+  margin-left: 30px;
 }
 
-.App-title {
-  font-size: 1.5em;
+.content {
+  margin: 10px 0;
 }
 
-.App-intro {
-  font-size: large;
+.form-control {
+  width: 175px;
+  text-align: left;
 }
 
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.style-pick {
+  display: inline-block;
+  margin: 0 10px;
+  font-size: 21px;
+  color: rgba(0, 0, 0, 0.54);
 }
 
-.picker > .box {
+.style-pick:hover {
   cursor: pointer;
 }
 
-@media screen and (max-width: 767px) {
-  .picker > .box {
-    box-sizing: border-box;
-    line-height: 5rem;
-    font-size: 1.32rem;
-    color: #777777;
-  }
+.style-pick[selected-style="true"] {
+  color: black;
 }
 
-@media screen and (min-width: 768px) {
-  .picker > .box {
-    border: 1px solid #e0e0e0;
-    background-color: #f6f6f6;
-    padding-left: 0.9rem;
-    box-sizing: border-box;
-    line-height: 3.2rem;
-    font-size: 1.3rem;
-    color: #525252;
-  }
+.styles {
+  width: 150px;
+  border: solid 1px;
+  text-align: center;
+}
 
-  .picker > .box > label {
-    font-size: 1.3rem;
-    color: #525252;
-  }
+.size-input {
+  width: 100px;
+}
+
+.save-button {
+  display: block !important;
+  margin: 10px auto !important;
 }

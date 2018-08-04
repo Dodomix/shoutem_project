@@ -41,10 +41,10 @@ const mapDispatchToProps = dispatch => {
   return {
     setText: text => dispatch(setText(text)),
     setStyle: style => dispatch(setStyle(textStyleToStyle(style))),
-    setFontFamily: fontFamily => dispatch(setFontFamily(fontFamily)),
+    setFontFamily: e => dispatch(setFontFamily(e.target.value)),
     setFontStyle: fontStyle => dispatch(setFontStyle(fontStyle)),
     setFontSize: e => dispatch(setFontSize(parseInt(e.target.value, 0) || 1)),
-    setColor: color => dispatch(setColor(color)),
+    setColor: e => dispatch(setColor(e.target.value)),
     setSourceWindow: sourceWindow => dispatch(setSourceWindow(sourceWindow)),
     fetchToken: () => dispatch(fetchToken())
   };

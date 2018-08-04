@@ -4,7 +4,8 @@ import {
   selectIframe,
   setIframeLoaded,
   fetchText,
-  postText
+  postText,
+  resetText
 } from '../actions';
 
 const mapStateToProps = state => {
@@ -23,7 +24,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     selectIframe: selectedIframe => dispatch(selectIframe(selectedIframe)),
-    reset: () => {},
+    reset: () => dispatch(resetText()),
     setIframeLoaded: loaded => dispatch(setIframeLoaded(loaded)),
     fetchText: () => dispatch(fetchText()),
     postText: data => dispatch(postText(data))

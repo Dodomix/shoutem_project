@@ -16,15 +16,28 @@ app.use((req, res, next) => {
   next();
 });
 
-let text = 'Hello world! :)';
-let style = {
+const defaultText = 'Hello world! :)';
+const defaultStyle = {
   'fontSize': 20,
   'fontStyle': 'italic',
   'color': 'black',
   'fontFamily': 'Arial',
 };
 
+let text = defaultText;
+let style = defaultStyle;
+
 app.get('/api/text', (req, res) => {
+  res.send({
+    text: text,
+    style: style
+  });
+});
+
+app.post('/api/text/reset', (req, res) => {
+  text = defaultText;
+  style = defaultStyle;
+
   res.send({
     text: text,
     style: style

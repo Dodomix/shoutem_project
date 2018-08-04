@@ -1,9 +1,12 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
+import Button from '@material-ui/core/Button';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import Input from '@material-ui/core/Input';
 import './App.css';
-import Picker from 'react-picker';
-import 'react-picker/css/picker.css';
-import ArrowDropDown from 'react-icons/lib/md/arrow-drop-down';
 
 class App extends Component {
   constructor(props) {
@@ -35,62 +38,91 @@ class App extends Component {
     }, 'http://localhost:3000'));
   };
 
-  _handleFontClick = () => {
-    this.refs.fontPicker.show()
-  };
-
-  _handleColorClick = () => {
-    this.refs.colorPicker.show()
+  _isSelectedStyle = style => {
+    return this.props.textStyle[style.type] === style.value;
   };
 
   render() {
     return (
       <div className="App">
-        <div>Preview</div>
-        <div style={this.props.textStyle}>{this.props.text}</div>
-        <div>Font</div>
-        <Picker
-          ref="fontPicker"
-          value={this.props.style.fontFamily}
-          options={['Arial', 'Times New Roman', 'Verdana']}
-          onChange={this.props.setFontFamily}
-        >
-          <div className="box" onClick={this._handleFontClick.bind(this)}>
-            <label>{this.props.style.fontFamily}</label>
-            <ArrowDropDown/>
+        <div className="content">
+          <div className="label">Preview</div>
+          <div className="text" style={this.props.textStyle}>{this.props.text}</div>
+        </div>
+        <div className="content">
+          <div className="label">Font</div>
+          <div className="text">
+            <FormControl className="form-control">
+              <Select
+                value={this.props.style.fontFamily}
+                onChange={this.props.setFontFamily}
+                inputProps={{
+                  name: 'font',
+                  id: 'font-select',
+                }}
+              >
+                <MenuItem value="Arial">Arial</MenuItem>
+                <MenuItem value="Times New Roman">Times New Roman</MenuItem>
+                <MenuItem value="Verdana">Verdana</MenuItem>
+              </Select>
+            </FormControl>
           </div>
-        </Picker>
-
-        <div>Font style</div>
-        <div onClick={this.props.setFontStyle.bind(this, {
-          type: 'fontWeight',
-          value: 'bold'
-        })}>B</div>
-        <div onClick={this.props.setFontStyle.bind(this, {
-          type: 'fontStyle',
-          value: 'italic'
-        })}>I</div>
-        <div onClick={this.props.setFontStyle.bind(this, {
-          type: 'textDecoration',
-          value: 'underline'
-        })}>U</div>
-
-        <div>Font size</div>
-        <input type="number" value={this.props.style.fontSize} min={5} max={30} onChange={this.props.setFontSize}/>
-
-        <div>Color</div>
-        <Picker
-          ref="colorPicker"
-          value={this.props.style.color}
-          options={['black', 'blue', 'red']}
-          onChange={this.props.setColor}
-        >
-          <div className="box" onClick={this._handleColorClick.bind(this)}>
-            <label>{this.props.style.color}</label>
-            <ArrowDropDown/>
+        </div>
+        <div className="content">
+          <div className="label">Font Style</div>
+          <div className="text">
+            <div className="styles">
+              <div className="style-pick" onClick={this.props.setFontStyle.bind(this, {
+                type: 'fontWeight',
+                value: 'bold'
+              })} selected-style={this._isSelectedStyle({
+                type: 'fontWeight',
+                value: 'bold'
+              }).toString()}>B</div>
+              <div className="style-pick" onClick={this.props.setFontStyle.bind(this, {
+                type: 'fontStyle',
+                value: 'italic'
+              })} selected-style={this._isSelectedStyle({
+                type: 'fontStyle',
+                value: 'italic'
+              }).toString()}>I</div>
+              <div className="style-pick" onClick={this.props.setFontStyle.bind(this, {
+                type: 'textDecoration',
+                value: 'underline'
+              })} selected-style={this._isSelectedStyle({
+                type: 'textDecoration',
+                value: 'underline'
+              }).toString()}>U</div>
+            </div>
           </div>
-        </Picker>
-        <button onClick={this._modifyStyle}>Save</button>
+        </div>
+
+        <div className="content">
+          <div className="label">Font Size</div>
+          <div className="text">
+            <Input className="size-input" type="number" value={this.props.style.fontSize} min={5} max={30} onChange={this.props.setFontSize}/>
+          </div>
+        </div>
+        <div className="content">
+          <div className="label">Color</div>
+          <div className="text">
+            <FormControl className="form-control">
+              <Select
+                value={this.props.style.color}
+                onChange={this.props.setColor}
+                inputProps={{
+                  name: 'color',
+                  id: 'color-select',
+                }}
+              >
+                <MenuItem value="black">Black</MenuItem>
+                <MenuItem value="blue">Blue</MenuItem>
+                <MenuItem value="red">Red</MenuItem>
+              </Select>
+            </FormControl>
+          </div>
+        </div>
+        <Button className="save-button" onClick={this._modifyStyle}>Save</Button>
       </div>
     );
   }

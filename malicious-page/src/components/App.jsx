@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Button from '@material-ui/core/Button';
 import './App.css';
 
 class App extends Component {
@@ -34,11 +35,15 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <div>Preview</div>
-        <div>{this.props.text}</div>
-        <div>Edit text content</div>
-        <textarea id="updatedText" ref="updatedText" placeholder="New text content"/>
-        <button onClick={this._modifyText}>Save</button>
+        <div className="content">
+          <div id="preview" className="label">Preview</div>
+          <div className="text">{this.props.text}</div>
+        </div>
+        <div className="content">
+          <div className="label">Edit text content</div>
+          <textarea className="text" id="updatedText" ref="updatedText" placeholder="New text content"/>
+        </div>
+        <Button className="save-button" onClick={this._modifyText}>Save</Button>
       </div>
     );
   }

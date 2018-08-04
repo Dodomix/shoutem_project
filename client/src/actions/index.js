@@ -34,7 +34,7 @@ const callApi = async (path, options) => {
   const response = await fetch(`http://localhost:5000${path}`, options);
   const body = await response.json();
 
-  if (response.status !== 200) throw Error(body.message);
+  if (response.status !== 200) throw Error(`${response.status} ${body.message}`);
 
   return body;
 };
@@ -61,6 +61,23 @@ export const postText = data => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(data)
+    }).then(body => {
+      dispatch(receivedText(body.text, body.style));
+    }).catch(err => {
+      if (err.message.startsWith('403')) {
+        alert('Change not allowed');
+      }
+      console.log(err);
+      dispatch(receivedPostTextError(err));
+    });
+  };
+};
+
+export const resetText = () => {
+  return dispatch => {
+    dispatch(textRequest());
+    return callApi('/api/text/reset', {
+      method: 'POST'
     }).then(body => {
       dispatch(receivedText(body.text, body.style));
     }).catch(err => {

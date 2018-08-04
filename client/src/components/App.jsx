@@ -1,4 +1,8 @@
 import React, { Component } from 'react';
+import Button from '@material-ui/core/Button';
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 import PropTypes from 'prop-types';
 import './App.css';
 
@@ -56,15 +60,30 @@ class App extends Component {
     this.iframeComponent.current.contentWindow.postMessage(message, this.props.iframeOrigin)
   }
 
+  selectIframe(e, value) {
+    return this.props.selectIframe(value);
+  }
+
   render() {
-    const {text, style, iframeOrigin, selectIframe, reset} = this.props;
+    const {text, style, iframeOrigin, selectedIframe, reset} = this.props;
     return (
       <div className="App">
+        <Button className="reset-button" onClick={reset}>Reset</Button>
         <div className="text" style={style}>{text}</div>
-        <button onClick={reset}>Reset</button>
-        <div onClick={selectIframe.bind(this, 'content-editor')}>Content Editor</div>
-        <div onClick={selectIframe.bind(this, 'style-editor')}>Style Editor</div>
-        <div onClick={selectIframe.bind(this, 'malicious-page')}>Malicious Page</div>
+        <AppBar className="tabs" position="static" color="default">
+          <Tabs
+            value={selectedIframe}
+            onChange={this.selectIframe.bind(this)}
+            indicatorColor="primary"
+            textColor="primary"
+            scrollable
+            scrollButtons="auto"
+          >
+            <Tab value="content-editor" label="Content Editor" />
+            <Tab value="style-editor" label="Style Editor" />
+            <Tab value="malicious-page" label="Malicious Page" />
+          </Tabs>
+        </AppBar>
         <div>
           <iframe id="contentIframe" ref={this.iframeComponent} title="app" src={iframeOrigin}/>
         </div>
