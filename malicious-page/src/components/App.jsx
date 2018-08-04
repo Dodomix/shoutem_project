@@ -19,7 +19,7 @@ class App extends Component {
           console.log('Invalid source of message');
           return;
         }
-        this.props.setText(e.data.text);
+        this.props.setText(e.data);
       }
     });
   }
@@ -37,7 +37,7 @@ class App extends Component {
       <div className="App">
         <div className="content">
           <div id="preview" className="label">Preview</div>
-          <div className="text">{this.props.text}</div>
+          <div className="text" style={this.props.style}>{this.props.text}</div>
         </div>
         <div className="content">
           <div className="label">Edit text content</div>

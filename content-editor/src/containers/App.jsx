@@ -9,6 +9,7 @@ import {
 const mapStateToProps = state => {
   return {
     text: state.text.text,
+    style: state.text.style,
     sourceWindow: state.comm.sourceWindow
   };
 };

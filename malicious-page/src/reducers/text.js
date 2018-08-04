@@ -3,14 +3,16 @@ import {
 } from '../actions/actionConstants';
 
 const initialState = {
-  text: ''
+  text: '',
+  style: {}
 };
 
 const text = (state = initialState, action) => {
   switch (action.type) {
     case SET_TEXT:
       return Object.assign({}, state, {
-        text: action.text
+        text: action.text.text,
+        style: action.text.style
       });
     default:
       return state;
