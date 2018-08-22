@@ -8,6 +8,11 @@
     "malicious-page": "cd malicious-page && yarn start",
     "server": "nodemon server.js",
     "component-server": "nodemon component-server.js",
+    "setup-client": "cd client && npm install",
+    "setup-content-editor": "cd content-editor && npm install",
+    "setup-style-editor": "cd style-editor && npm install",
+    "setup-malicious-page": "cd malicious-page && npm install",
+    "setup": "npm install && concurrently \"yarn setup-client\" \"yarn setup-content-editor\" \"yarn setup-style-editor\" \"yarn setup-malicious-page\"",
     "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn component-server\" \"yarn client\" \"yarn content-editor\" \"yarn style-editor\" \"yarn malicious-page\""
   },
   "dependencies": {

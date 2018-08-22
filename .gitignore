@@ -22,4 +22,5 @@ yarn-error.log*
 
 jwks.json
 private.pem
+public.pem
 .env
