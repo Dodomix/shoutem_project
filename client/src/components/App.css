@@ -1,0 +1,22 @@
+.App {
+  text-align: center;
+}
+
+#contentIframe {
+  width: 600px;
+  height: 400px;
+}
+
+.reset-button {
+  float: right;
+}
+
+.text {
+  padding-top: 30px;
+  margin-bottom: 20px;
+}
+
+.tabs {
+  width: 600px !important;
+  margin: auto;
+}
