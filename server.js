@@ -2,6 +2,8 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const bodyParser = require('body-parser');
+const chess = require('chess');
+const _ = require('lodash');
 
 const pub = fs.readFileSync('public.pem');
 
@@ -16,67 +18,88 @@ app.use((req, res, next) => {
   next();
 });
 
-const defaultText = 'Hello world! :)';
-const defaultStyle = {
-  'fontSize': 20,
-  'fontStyle': 'italic',
-  'color': 'black',
-  'fontFamily': 'Arial',
+const squareToPosition = (square, notation) => notation + '@' + square.file + square.rank;
+
+const boardToPositionArrays = board => {
+  return {
+    white: board.squares
+      .filter(square => square.piece && square.piece.side.name === 'white')
+      .map(square => squareToPosition(square, square.piece.notation ? square.piece.notation : 'P')),
+    black: board.squares
+      .filter(square => square.piece && square.piece.side.name === 'black')
+      .map(square => squareToPosition(square, square.piece.notation ? square.piece.notation.toLowerCase() : 'p')),
+  };
 };
 
-let text = defaultText;
-let style = defaultStyle;
+const gameClient = chess.create();
+const gameState = {
+  board: boardToPositionArrays(gameClient.getStatus().board),
+  currentPlayer: 'white',
+  move: {
+    black: null,
+    white: null
+  }
+};
 
-app.get('/api/text', (req, res) => {
-  res.send({
-    text: text,
-    style: style
-  });
+const toggleCurrentPlayer = () => gameState.currentPlayer = gameState.currentPlayer === 'white' ? 'black' : 'white';
+
+const getReadableState = permissions => {
+  const readableState = {};
+  _.forEach(permissions.read, permission => _.set(readableState, permission, _.get(gameState, permission)));
+  return readableState;
+};
+
+const hasPermission = (permissions, stateUpdate) => {
+  const permittedStateUpdate = {};
+  _.forEach(permissions.write, permission => _.set(permittedStateUpdate, permission, _.get(stateUpdate, permission)));
+  return _.isEqual(stateUpdate, permittedStateUpdate);
+};
+
+const actionValid = state => {
+  const move = state.move[state.currentPlayer];
+  if (!move) {
+    return false;
+  }
+  return _.some(gameClient.getStatus().notatedMoves, (value, key) => key === move);
+};
+
+const executeActions = () => {
+  if (gameState.move) {
+    gameClient.move(gameState.move[gameState.currentPlayer]);
+  }
+  gameState.board = boardToPositionArrays(gameClient.getStatus().board);
+  toggleCurrentPlayer();
+};
+
+app.get('/api/board', (req, res) => {
+  res.send(getReadableState(req.token));
 });
 
-app.post('/api/text/reset', (req, res) => {
-  text = defaultText;
-  style = defaultStyle;
-
-  res.send({
-    text: text,
-    style: style
-  });
-});
-
-app.post('/api/text', (req, res) => {
+app.post('/api/board', (req, res) => {
   const body = req.body;
   const tokenData = jwt.verify(body.token, pub, { algorithm: 'RS512'});
   if (body.origin !== tokenData.origin) {
     res.status(403).send({
       message: 'Invalid origin'
     });
-  } else if (tokenData.permissions.indexOf(body.action) === -1) {
+  } else if (!hasPermission(tokenData.permissions, body.stateUpdate)) {
     res.status(403).send({
       message: 'Action not permitted'
     });
   } else {
-    if (body.action === 'MODIFY_CONTENT') {
-     text = body.newContent;
+    const updatedState = {};
+    _.assign(updatedState, gameState, body.stateUpdate);
+    if (actionValid(updatedState)) {
+      _.assign(gameState, updatedState);
+      executeActions();
+      res.send({
+        message: 'State updated'
+      });
+    } else {
+      res.status(403).send({
+        message: 'Action not valid'
+      });
     }
-    if (body.action === 'MODIFY_STYLE') {
-      style = {
-        fontFamily: body.newStyle.fontFamily,
-        fontSize: body.newStyle.fontSize,
-        color: body.newStyle.color
-      };
-      if (body.newStyle.fontStyle.type === 'fontStyle') {
-        style.fontStyle = body.newStyle.fontStyle.value;
-      } else if (body.newStyle.fontStyle.type === 'textDecoration') {
-        style.textDecoration = body.newStyle.fontStyle.value;
-      } else if (body.newStyle.fontStyle.type === 'fontWeight') {
-        style.fontWeight = body.newStyle.fontStyle.value;
-      }
-    }
-    res.send({
-      text: text,
-      style: style
-    });
   }
 });
 

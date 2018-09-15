@@ -1,118 +1,137 @@
 import React, { Component } from 'react';
-import Button from '@material-ui/core/Button';
-import AppBar from '@material-ui/core/AppBar';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import PropTypes from 'prop-types';
+// import Button from '@material-ui/core/Button';
+// import AppBar from '@material-ui/core/AppBar';
+// import Tabs from '@material-ui/core/Tabs';
+// import Tab from '@material-ui/core/Tab';
+// import PropTypes from 'prop-types';
 import './App.css';
+
+import { connect } from 'react-redux';
+import {
+  setIframeLoaded,
+  fetchState,
+  postState
+} from '../actions';
 
 class App extends Component {
   constructor(props) {
     super(props);
-    this.iframeComponent = React.createRef();
+    this._executeForEachComponent(component => component.iframe = React.createRef()); // TODO
 
     window.addEventListener('message', e => {
       if (e.source === window) { // react messages
         return;
       }
-      if (e.origin !== this.props.iframeOrigin) {
+      const components = this.props.components;
+      const component = components[Object.keys(components).find(key => components[key].origin === e.origin)];
+      if (!component) {
         console.log('Invalid origin of message');
-      } else if(e.source !== this.iframeComponent.current.contentWindow) {
+      } else if (components.iframe.current.contentWindow !== e.source) {
         console.log('Invalid source of message');
       } else {
-        const data = e.data;
-        data.origin = e.origin;
-        this.props.postText(data).then(() => {
-          if (this.props.iframeLoaded) {
-            this._postMessageToCurrentIframeComponent({
-              type: 'text-update',
-              text: this.props.text,
-              style: this.props.style
+        if (e.message.type === 'data-request') {
+          this.props.fetchState(e.origin, e.message.token).then(state => {
+            this._postMessageToIframeComponent(component, {
+              type: 'data-response',
+              state: state
             });
-          }
-        });
+          });
+        } else if (e.message.type === 'state-update') {
+          this.props.postState({
+            token: e.message.token,
+            stateUpdate: e.message.stateUpdate,
+            origin: e.origin
+          }).then(() => {
+            this._postMessageToIframeComponent(component, {
+              type: 'request-succeeded'
+            });
+            this._executeForEachComponent(component => this._postMessageToIframeComponent(component, {
+              type: 'state-updated'
+            }));
+          }).catch(err => {
+            this._postMessageToIframeComponent(component, {
+              type: 'request-failed',
+              reason: err
+            });
+          });
+        } else {
+          console.log('Unrecognized request');
+        }
       }
     });
   }
 
   componentDidMount() {
-    this.iframeComponent.current.addEventListener('load', () => {
-      this._postMessageToCurrentIframeComponent({
-        type: 'register',
-        text: this.props.text,
-        style: this.props.style
-      });
-      this.props.setIframeLoaded(true);
-    });
-
-    this.props.fetchText().then(() => {
-      if (this.props.iframeLoaded) {
-        this._postMessageToCurrentIframeComponent({
-          type: 'text-update',
-          text: this.props.text,
-          style: this.props.style
+    this._executeForEachComponent((component, key) => {
+      component.iframe.current.addEventListener('load', () => {
+        this._postMessageToIframeComponent(component, {
+          type: 'register'
         });
-      }
+        this.props.setIframeLoaded(key, true);
+      });
     });
   }
 
-  _postMessageToCurrentIframeComponent(message) {
-    this.iframeComponent.current.contentWindow.postMessage(message, this.props.iframeOrigin)
+  _executeForEachComponent(action) {
+    const components = this.props.components;
+    Object.keys(components).forEach(key => action(components[key], key));
   }
 
-  selectIframe(e, value) {
-    return this.props.selectIframe(value);
+  _postMessageToIframeComponent(component, message) {
+    component.iframe.current.contentWindow.postMessage(message, component.origin);
   }
 
   render() {
-    const {text, style, iframeOrigin, selectedIframe, reset} = this.props;
+    const {components} = this.props;
     return (
       <div className="App">
-        <Button className="reset-button" onClick={reset}>Reset</Button>
-        <div className="text" style={style}>{text}</div>
-        <AppBar className="tabs" position="static" color="default">
-          <Tabs
-            value={selectedIframe}
-            onChange={this.selectIframe.bind(this)}
-            indicatorColor="primary"
-            textColor="primary"
-            scrollable
-            scrollButtons="auto"
-          >
-            <Tab value="content-editor" label="Content Editor" />
-            <Tab value="style-editor" label="Style Editor" />
-            <Tab value="malicious-page" label="Malicious Page" />
-          </Tabs>
-        </AppBar>
         <div>
-          <iframe id="contentIframe" ref={this.iframeComponent} title="app" src={iframeOrigin}/>
+          <iframe id="player1" ref={ components.player1.iframe } title="player1" src={ components.player1.origin }/>
+          <iframe id="player2" ref={ components.player2.iframe } title="player2" src={ components.player2.origin }/>
         </div>
       </div>
     );
   }
 }
 
-App.propTypes = {
-  text: PropTypes.string.isRequired,
-  style: PropTypes.shape({
-    fontFamily: PropTypes.string,
-    fontSize: PropTypes.number,
-    color: PropTypes.string,
-    fontWeight: PropTypes.string,
-    fontStyle: PropTypes.string,
-    textDecoration: PropTypes.string
-  }).isRequired,
-  selectedIframe: PropTypes.string.isRequired,
-  iframeOrigin: PropTypes.string.isRequired,
-  iframeLoaded: PropTypes.bool.isRequired,
-  fetchInProgress: PropTypes.bool,
-  fetchFailed: PropTypes.bool,
-  postFailed: PropTypes.bool,
-  selectIframe: PropTypes.func.isRequired,
-  reset: PropTypes.func.isRequired,
-  setIframeLoaded: PropTypes.func.isRequired,
-  fetchText: PropTypes.func.isRequired,
-  postText: PropTypes.func.isRequired
+// App.propTypes = {
+//   text: PropTypes.string.isRequired,
+//   style: PropTypes.shape({
+//     fontFamily: PropTypes.string,
+//     fontSize: PropTypes.number,
+//     color: PropTypes.string,
+//     fontWeight: PropTypes.string,
+//     fontStyle: PropTypes.string,
+//     textDecoration: PropTypes.string
+//   }).isRequired,
+//   selectedIframe: PropTypes.string.isRequired,
+//   iframeOrigin: PropTypes.string.isRequired,
+//   iframeLoaded: PropTypes.bool.isRequired,
+//   fetchInProgress: PropTypes.bool,
+//   fetchFailed: PropTypes.bool,
+//   postFailed: PropTypes.bool,
+//   selectIframe: PropTypes.func.isRequired,
+//   reset: PropTypes.func.isRequired,
+//   setIframeLoaded: PropTypes.func.isRequired,
+//   fetchText: PropTypes.func.isRequired,
+//   postText: PropTypes.func.isRequired
+// };
+
+const mapStateToProps = state => {
+  return {
+    components: state.iframe.components
+  };
 };
 
-export default App;
+const mapDispatchToProps = dispatch => {
+  return {
+    setIframeLoaded: (iframe, loaded) => dispatch(setIframeLoaded(iframe, loaded)),
+    fetchState: parameters => dispatch(fetchState(parameters)),
+    postState: parameters => dispatch(postState(parameters))
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(App);

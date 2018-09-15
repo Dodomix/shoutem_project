@@ -1,32 +1,27 @@
-import {SELECT_IFRAME, SET_IFRAME_LOADED, TEXT_REQUEST, TEXT_RESPONSE, FETCH_TEXT_FAILED, POST_TEXT_FAILED} from './actionConstants';
+import {SET_IFRAME_LOADED, STATE_REQUEST, STATE_RESPONSE, FETCH_STATE_FAILED, POST_STATE_FAILED} from './actionConstants';
 
-export const selectIframe = selectedIframe => ({
-  type: SELECT_IFRAME,
-  selectedIframe
-});
-
-export const setIframeLoaded = iframeLoaded => ({
+export const setIframeLoaded = (iframe, loaded) => ({
   type: SET_IFRAME_LOADED,
-  iframeLoaded
+  iframe,
+  loaded
 });
 
-export const textRequest = () => ({
-  type: TEXT_REQUEST
+export const stateRequest = () => ({
+  type: STATE_REQUEST
 });
 
-export const receivedText = (text, style) => ({
-  type: TEXT_RESPONSE,
-  text,
-  style
+export const receivedState = state => ({
+  type: STATE_RESPONSE,
+  state
 });
 
-export const receivedFetchTextError = err => ({
-  type: FETCH_TEXT_FAILED,
+export const receivedFetchStateError = err => ({
+  type: FETCH_STATE_FAILED,
   err
 });
 
-export const receivedPostTextError = err => ({
-  type: POST_TEXT_FAILED,
+export const receivedPostStateError = err => ({
+  type: POST_STATE_FAILED,
   err
 });
 
@@ -39,22 +34,22 @@ const callApi = async (path, options) => {
   return body;
 };
 
-export const fetchText = () => {
+export const fetchState = (origin, token) => {
   return dispatch => {
-    dispatch(textRequest());
-    return callApi('/api/text').then(body => {
-      dispatch(receivedText(body.text, body.style));
+    dispatch(stateRequest());
+    return callApi(`/api/state?origin=${origin}&token=${token}`).then(body => {
+      dispatch(receivedState(body.state));
     }).catch(err => {
       console.log(err);
-      dispatch(receivedFetchTextError(err));
+      dispatch(receivedFetchStateError(err));
     });
   };
 };
 
-export const postText = data => {
+export const postState = data => {
   return dispatch => {
-    dispatch(textRequest());
-    return callApi('/api/text', {
+    dispatch(stateRequest());
+    return callApi('/api/state', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -62,27 +57,13 @@ export const postText = data => {
       },
       body: JSON.stringify(data)
     }).then(body => {
-      dispatch(receivedText(body.text, body.style));
+      dispatch(receivedState(body.state));
     }).catch(err => {
       if (err.message.startsWith('403')) {
         alert('Change not allowed');
       }
       console.log(err);
-      dispatch(receivedPostTextError(err));
-    });
-  };
-};
-
-export const resetText = () => {
-  return dispatch => {
-    dispatch(textRequest());
-    return callApi('/api/text/reset', {
-      method: 'POST'
-    }).then(body => {
-      dispatch(receivedText(body.text, body.style));
-    }).catch(err => {
-      console.log(err);
-      dispatch(receivedPostTextError(err));
+      dispatch(receivedPostStateError(err));
     });
   };
 };

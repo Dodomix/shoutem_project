@@ -3,22 +3,21 @@
   "version": "1.0.0",
   "scripts": {
     "client": "cd client && yarn start",
-    "content-editor": "cd content-editor && yarn start",
-    "style-editor": "cd style-editor && yarn start",
-    "malicious-page": "cd malicious-page && yarn start",
+    "player": "cd player && yarn start",
     "server": "nodemon server.js",
     "component-server": "nodemon component-server.js",
     "setup-client": "cd client && npm install",
-    "setup-content-editor": "cd content-editor && npm install",
-    "setup-style-editor": "cd style-editor && npm install",
-    "setup-malicious-page": "cd malicious-page && npm install",
-    "setup": "npm install && concurrently \"yarn setup-client\" \"yarn setup-content-editor\" \"yarn setup-style-editor\" \"yarn setup-malicious-page\"",
-    "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn component-server\" \"yarn client\" \"yarn content-editor\" \"yarn style-editor\" \"yarn malicious-page\""
+    "setup-player": "cd player && npm install",
+    "setup-server": "npm install",
+    "setup": "concurrently \"yarn setup-server\" \"yarn setup-client\" \"yarn setup-player\"",
+    "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn component-server\" \"yarn client\" \"PORT=3001 yarn player\" \"PORT=3002 yarn player\""
   },
   "dependencies": {
     "body-parser": "^1.18.3",
+    "chess": "^0.3.3",
     "express": "^4.16.3",
-    "jsonwebtoken": "^8.3.0"
+    "jsonwebtoken": "^8.3.0",
+    "lodash": "^4.17.10"
   },
   "devDependencies": {
     "concurrently": "^3.6.0"

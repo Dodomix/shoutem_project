@@ -5,7 +5,7 @@ const cert = fs.readFileSync('private.pem');
 
 const app = express();
 const port = process.env.PORT || 5001;
-const allowedOrigins = ['http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003'];
+const allowedOrigins = ['http://localhost:3001', 'http://localhost:3002'];
 
 app.use((req, res, next) => {
   const origin = req.get('origin');
@@ -20,15 +20,17 @@ app.use((req, res, next) => {
 const appData = {
   'http://localhost:3001': {
     origin: 'http://localhost:3001',
-    permissions: ['MODIFY_CONTENT']
+    permissions: {
+      read: ['board', 'currentPlayer'],
+      write: ['move.white']
+    }
   },
   'http://localhost:3002': {
     origin: 'http://localhost:3002',
-    permissions: ['MODIFY_STYLE']
-  },
-  'http://localhost:3003': {
-    origin: 'http://localhost:3003',
-    permissions: []
+    permissions: {
+      read: ['board', 'currentPlayer'],
+      write: ['move.black']
+    }
   }
 };
 
