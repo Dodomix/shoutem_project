@@ -1,13 +1,30 @@
-import {SET_SOURCE_WINDOW, SET_TEXT, TOKEN_REQUEST, TOKEN_RESPONSE, FETCH_TOKEN_FAILED} from './actionConstants';
+import {
+  SET_SOURCE_WINDOW,
+  HANDLE_MOVE_PIECE,
+  HANDLE_DRAG_PIECE,
+  TOKEN_REQUEST,
+  TOKEN_RESPONSE,
+  FETCH_TOKEN_FAILED,
+  SET_BOARD_STATE
+} from './actionConstants';
 
 export const setSourceWindow = sourceWindow => ({
   type: SET_SOURCE_WINDOW,
   sourceWindow
 });
 
-export const setText = text => ({
-  type: SET_TEXT,
-  text
+export const handleMovePiece = (piece, start, end) => ({
+  type: HANDLE_MOVE_PIECE,
+  piece,
+  start,
+  end
+});
+
+export const handleDragPiece = (piece, start, dragAllowed) => ({
+  type: HANDLE_DRAG_PIECE,
+  piece,
+  start,
+  dragAllowed
 });
 
 export const tokenRequest = () => ({
@@ -21,6 +38,11 @@ export const receivedToken = () => ({
 export const receivedFetchTokenError = err => ({
   type: FETCH_TOKEN_FAILED,
   err
+});
+
+export const setBoardState = state => ({
+  type: SET_BOARD_STATE,
+  state
 });
 
 const callApi = async (path, options) => {

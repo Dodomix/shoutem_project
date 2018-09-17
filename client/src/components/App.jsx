@@ -8,15 +8,24 @@ import './App.css';
 
 import { connect } from 'react-redux';
 import {
+  assignIframe,
   setIframeLoaded,
   fetchState,
   postState
 } from '../actions';
+import {
+  REGISTER,
+  DATA_REQUEST,
+  DATA_RESPONSE,
+  REQUEST_SUCCEEDED,
+  REQUEST_FAILED,
+  UPDATE_STATE,
+  STATE_UPDATED
+} from '../responseTypeConstants';
 
 class App extends Component {
   constructor(props) {
     super(props);
-    this._executeForEachComponent(component => component.iframe = React.createRef()); // TODO
 
     window.addEventListener('message', e => {
       if (e.source === window) { // react messages
@@ -25,70 +34,73 @@ class App extends Component {
       const components = this.props.components;
       const component = components[Object.keys(components).find(key => components[key].origin === e.origin)];
       if (!component) {
-        console.log('Invalid origin of message');
-      } else if (components.iframe.current.contentWindow !== e.source) {
-        console.log('Invalid source of message');
+        alert('Received message with unknown origin: ' + e.origin);
+      } else if (component.iframe.contentWindow !== e.source) {
+        alert('Received message with unknown source.');
       } else {
-        if (e.message.type === 'data-request') {
-          this.props.fetchState(e.origin, e.message.token).then(state => {
+        if (e.data.type === DATA_REQUEST) {
+          this.props.fetchState(e.origin, e.data.token).then(state => {
             this._postMessageToIframeComponent(component, {
-              type: 'data-response',
+              type: DATA_RESPONSE,
               state: state
             });
           });
-        } else if (e.message.type === 'state-update') {
+        } else if (e.data.type === UPDATE_STATE) {
           this.props.postState({
-            token: e.message.token,
-            stateUpdate: e.message.stateUpdate,
+            token: e.data.token,
+            stateUpdate: e.data.stateUpdate,
             origin: e.origin
           }).then(() => {
             this._postMessageToIframeComponent(component, {
-              type: 'request-succeeded'
+              type: REQUEST_SUCCEEDED
             });
-            this._executeForEachComponent(component => this._postMessageToIframeComponent(component, {
-              type: 'state-updated'
+            this._executeForEachComponent(this.props.components, component => this._postMessageToIframeComponent(component, {
+              type: STATE_UPDATED
             }));
           }).catch(err => {
             this._postMessageToIframeComponent(component, {
-              type: 'request-failed',
-              reason: err
+              type: REQUEST_FAILED,
+              reason: err.message
             });
           });
         } else {
-          console.log('Unrecognized request');
+          alert('Unrecognized message type: ' + e.data.type);
         }
       }
     });
   }
 
   componentDidMount() {
-    this._executeForEachComponent((component, key) => {
-      component.iframe.current.addEventListener('load', () => {
+    this._executeForEachComponent(this.props.components, (component, key) => {
+      component.iframe.addEventListener('load', () => {
         this._postMessageToIframeComponent(component, {
-          type: 'register'
+          type: REGISTER
         });
         this.props.setIframeLoaded(key, true);
       });
     });
   }
 
-  _executeForEachComponent(action) {
-    const components = this.props.components;
-    Object.keys(components).forEach(key => action(components[key], key));
+  _executeForEachComponent(components, action) {
+    return Object.keys(components).forEach(key => action(components[key], key));
   }
 
   _postMessageToIframeComponent(component, message) {
-    component.iframe.current.contentWindow.postMessage(message, component.origin);
+    return component.iframe.contentWindow.postMessage(message, component.origin);
   }
 
   render() {
     const {components} = this.props;
     return (
       <div className="App">
+        {this.props.apiOperationInProgress ? <div className="background">
+          <div className="aligning-block"/><img id="loader" src="ajax-loader.gif" alt=""/>
+        </div> : ''}
         <div>
-          <iframe id="player1" ref={ components.player1.iframe } title="player1" src={ components.player1.origin }/>
-          <iframe id="player2" ref={ components.player2.iframe } title="player2" src={ components.player2.origin }/>
+          <iframe id="player1" ref={ this.props.assignIframe.bind(this, 'player1') } title="player1" src={ components.player1.origin }/>
+          <iframe id="player2" ref={ this.props.assignIframe.bind(this, 'player2') } title="player2" src={ components.player2.origin }/>
         </div>
+        <div className="error-message">{this.props.apiOperationFailed ? this.props.apiError.message : ''}</div>
       </div>
     );
   }
@@ -119,14 +131,18 @@ class App extends Component {
 
 const mapStateToProps = state => {
   return {
-    components: state.iframe.components
+    components: state.iframe.components,
+    apiOperationInProgress: state.api.apiOperationInProgress,
+    apiOperationFailed: state.api.apiOperationFailed,
+    apiError: state.api.err
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
+    assignIframe: (iframeName, ref) => dispatch(assignIframe(iframeName, ref)),
     setIframeLoaded: (iframe, loaded) => dispatch(setIframeLoaded(iframe, loaded)),
-    fetchState: parameters => dispatch(fetchState(parameters)),
+    fetchState: (origin, token) => dispatch(fetchState(origin, token)),
     postState: parameters => dispatch(postState(parameters))
   };
 };

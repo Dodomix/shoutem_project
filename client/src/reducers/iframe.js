@@ -1,4 +1,5 @@
 import {
+  ASSIGN_IFRAME,
   SET_IFRAME_LOADED
 } from '../actions/actionConstants';
 
@@ -22,6 +23,13 @@ const iframe = (state = initialState, action) => {
         iframeLoaded: action.loaded
       });
       return Object.assign({}, state, loadedUpdate);
+    case ASSIGN_IFRAME:
+      const assignUpdate = {};
+      Object.assign(assignUpdate, state);
+      Object.assign(assignUpdate.components[action.iframeName], {
+        iframe: action.ref
+      });
+      return Object.assign({}, state, assignUpdate);
     default:
       return state;
   }

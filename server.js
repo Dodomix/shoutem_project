@@ -2,8 +2,10 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const bodyParser = require('body-parser');
-const chess = require('chess');
+const Chess = require('chess.js').Chess;
 const _ = require('lodash');
+
+const chess = new Chess();
 
 const pub = fs.readFileSync('public.pem');
 
@@ -18,22 +20,28 @@ app.use((req, res, next) => {
   next();
 });
 
-const squareToPosition = (square, notation) => notation + '@' + square.file + square.rank;
+const squareToPosition = (piece, square) => piece + '@' + square;
 
-const boardToPositionArrays = board => {
-  return {
-    white: board.squares
-      .filter(square => square.piece && square.piece.side.name === 'white')
-      .map(square => squareToPosition(square, square.piece.notation ? square.piece.notation : 'P')),
-    black: board.squares
-      .filter(square => square.piece && square.piece.side.name === 'black')
-      .map(square => squareToPosition(square, square.piece.notation ? square.piece.notation.toLowerCase() : 'p')),
+const boardToPositionArrays = () => {
+  const pieces = {
+    white: [],
+    black: []
   };
+  chess.SQUARES.forEach(square => {
+    const piece = chess.get(square);
+    if (piece !== null) {
+      if (piece.color === 'b') {
+        pieces.black.push(squareToPosition(piece.type, square));
+      } else {
+        pieces.white.push(squareToPosition(piece.type.toUpperCase(), square));
+      }
+    }
+  });
+  return pieces;
 };
 
-const gameClient = chess.create();
 const gameState = {
-  board: boardToPositionArrays(gameClient.getStatus().board),
+  board: boardToPositionArrays(),
   currentPlayer: 'white',
   move: {
     black: null,
@@ -41,7 +49,7 @@ const gameState = {
   }
 };
 
-const toggleCurrentPlayer = () => gameState.currentPlayer = gameState.currentPlayer === 'white' ? 'black' : 'white';
+const toggleCurrentPlayer = state => state.currentPlayer = state.currentPlayer === 'white' ? 'black' : 'white';
 
 const getReadableState = permissions => {
   const readableState = {};
@@ -55,27 +63,32 @@ const hasPermission = (permissions, stateUpdate) => {
   return _.isEqual(stateUpdate, permittedStateUpdate);
 };
 
-const actionValid = state => {
-  const move = state.move[state.currentPlayer];
-  if (!move) {
-    return false;
+const executeActions = state => {
+  let valid = true;
+  if (state.move) {
+    valid = valid && chess.move(state.move[state.currentPlayer], {
+      sloppy: true
+    });
   }
-  return _.some(gameClient.getStatus().notatedMoves, (value, key) => key === move);
+  if (valid) {
+    state.board = boardToPositionArrays();
+    toggleCurrentPlayer(state);
+  }
+  return valid;
 };
 
-const executeActions = () => {
-  if (gameState.move) {
-    gameClient.move(gameState.move[gameState.currentPlayer]);
+app.get('/api/state', (req, res) => {
+  const tokenData = jwt.verify(req.query.token, pub, { algorithm: 'RS512'});
+  if (req.query.origin !== tokenData.origin) {
+    res.status(403).send({
+      message: 'Invalid origin'
+    });
+  } else {
+    res.send(getReadableState(tokenData.permissions));
   }
-  gameState.board = boardToPositionArrays(gameClient.getStatus().board);
-  toggleCurrentPlayer();
-};
-
-app.get('/api/board', (req, res) => {
-  res.send(getReadableState(req.token));
 });
 
-app.post('/api/board', (req, res) => {
+app.post('/api/state', (req, res) => {
   const body = req.body;
   const tokenData = jwt.verify(body.token, pub, { algorithm: 'RS512'});
   if (body.origin !== tokenData.origin) {
@@ -89,9 +102,8 @@ app.post('/api/board', (req, res) => {
   } else {
     const updatedState = {};
     _.assign(updatedState, gameState, body.stateUpdate);
-    if (actionValid(updatedState)) {
+    if (executeActions(updatedState)) {
       _.assign(gameState, updatedState);
-      executeActions();
       res.send({
         message: 'State updated'
       });

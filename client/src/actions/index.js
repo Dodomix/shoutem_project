@@ -1,4 +1,16 @@
-import {SET_IFRAME_LOADED, STATE_REQUEST, STATE_RESPONSE, FETCH_STATE_FAILED, POST_STATE_FAILED} from './actionConstants';
+import {
+  ASSIGN_IFRAME,
+  SET_IFRAME_LOADED,
+  API_REQUEST,
+  API_REQUEST_SUCCESS,
+  API_REQUEST_FAILED
+} from './actionConstants';
+
+export const assignIframe = (iframeName, ref) => ({
+  type: ASSIGN_IFRAME,
+  iframeName,
+  ref
+});
 
 export const setIframeLoaded = (iframe, loaded) => ({
   type: SET_IFRAME_LOADED,
@@ -6,22 +18,16 @@ export const setIframeLoaded = (iframe, loaded) => ({
   loaded
 });
 
-export const stateRequest = () => ({
-  type: STATE_REQUEST
+export const apiRequest = () => ({
+  type: API_REQUEST
 });
 
-export const receivedState = state => ({
-  type: STATE_RESPONSE,
-  state
+export const apiRequestSuccess = () => ({
+  type: API_REQUEST_SUCCESS
 });
 
-export const receivedFetchStateError = err => ({
-  type: FETCH_STATE_FAILED,
-  err
-});
-
-export const receivedPostStateError = err => ({
-  type: POST_STATE_FAILED,
+export const apiRequestFailed = err => ({
+  type: API_REQUEST_FAILED,
   err
 });
 
@@ -36,19 +42,24 @@ const callApi = async (path, options) => {
 
 export const fetchState = (origin, token) => {
   return dispatch => {
-    dispatch(stateRequest());
-    return callApi(`/api/state?origin=${origin}&token=${token}`).then(body => {
-      dispatch(receivedState(body.state));
+    dispatch(apiRequest());
+    return callApi(`/api/state?origin=${encodeURIComponent(origin)}&token=${encodeURIComponent(token)}`, {
+      headers: {
+        'Accept': 'application/json'
+      },
+    }).then(body => {
+      dispatch(apiRequestSuccess());
+      return body;
     }).catch(err => {
       console.log(err);
-      dispatch(receivedFetchStateError(err));
+      dispatch(apiRequestFailed(err));
     });
   };
 };
 
 export const postState = data => {
   return dispatch => {
-    dispatch(stateRequest());
+    dispatch(apiRequest());
     return callApi('/api/state', {
       method: 'POST',
       headers: {
@@ -56,14 +67,14 @@ export const postState = data => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(data)
-    }).then(body => {
-      dispatch(receivedState(body.state));
+    }).then(() => {
+      dispatch(apiRequestSuccess());
     }).catch(err => {
       if (err.message.startsWith('403')) {
-        alert('Change not allowed');
+        alert(err.message.substr(4));
       }
-      console.log(err);
-      dispatch(receivedPostStateError(err));
+      dispatch(apiRequestFailed(err));
+      throw err; // rethrow error
     });
   };
 };
