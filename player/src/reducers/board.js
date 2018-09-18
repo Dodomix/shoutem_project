@@ -1,9 +1,5 @@
 import Chess from 'react-chess';
-import {
-  HANDLE_DRAG_PIECE,
-  HANDLE_MOVE_PIECE,
-  SET_BOARD_STATE
-} from '../actions/actionConstants';
+import {HANDLE_DRAG_PIECE, HANDLE_MOVE_PIECE, SET_BOARD_STATE} from '../actions/actionConstants';
 
 const initialState = {
   currentPlayer: 'white',
@@ -21,7 +17,7 @@ const formatMove = action => {
 const computeMovedPiece = (state, action) =>
   action.dragAllowed && // if drag is not allowed, keep old piece
   (state.piece === null || // no old piece, use new one
-  state.dragging) ?  // if already dragging, old piece was returned to its position, use new one
+    state.dragging) ?  // if already dragging, old piece was returned to its position, use new one
     action.piece : state.piece;
 
 const board = (state = initialState, action) => {

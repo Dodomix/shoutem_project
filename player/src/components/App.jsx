@@ -1,66 +1,24 @@
 import React, {Component} from 'react';
-// import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import Button from '@material-ui/core/Button';
 import './App.css';
 import Chess from 'react-chess';
 
 import {connect} from 'react-redux';
 import {
-  setSourceWindow,
-  fetchToken,
-  handleMovePiece,
+  setCommunicator,
   handleDragPiece,
+  handleMovePiece,
   setBoardState
 } from '../actions';
 
-import {
-  REGISTER,
-  DATA_REQUEST,
-  DATA_RESPONSE,
-  REQUEST_SUCCEEDED,
-  REQUEST_FAILED,
-  UPDATE_STATE,
-  STATE_UPDATED
-} from '../responseTypeConstants';
+import CommunicatorChild from 'communicator/communicator-child';
 
 class App extends Component {
-  constructor(props) {
-    super(props);
-    window.addEventListener('message', e => {
-      if (e.source === window) { // react messages
-        return;
-      }
-      if (e.origin !== 'http://localhost:3000') {
-        alert('Component received message with invalid origin: ' + e.origin);
-      } else {
-        if (!this.props.sourceWindow && e.data.type === REGISTER) {
-          this.props.setSourceWindow(e.source);
-          this._postMessageToParent({
-            type: DATA_REQUEST
-          });
-        } else if (this.props.sourceWindow !== e.source) {
-          alert('Component received message with invalid source.');
-        } else {
-          switch (e.data.type) {
-            case DATA_RESPONSE:
-              this.props.setBoardState(e.data.state);
-              break;
-            case REQUEST_SUCCEEDED:
-              break;
-            case REQUEST_FAILED:
-              break;
-            case STATE_UPDATED:
-              this._postMessageToParent({
-                type: DATA_REQUEST
-              });
-              break;
-            default:
-              alert('Unrecognized message type: ' + e.data.type);
-          }
-        }
-      }
-    });
-  };
+
+  componentDidMount() {
+    this.props.setCommunicator(new CommunicatorChild(this.props.setBoardState));
+  }
 
   _handleDrag = (piece, start) => {
     const dragging = this.props.dragging;
@@ -75,17 +33,10 @@ class App extends Component {
   _executeMove = () => {
     const move = {};
     move[this.props.currentPlayer] = this.props.move;
-    this._postMessageToParent({
-      type: UPDATE_STATE,
-      stateUpdate: {
-        move: move
-      }
+    this.props.communicator.sendUpdateState({
+      move: move
     });
   };
-
-  _postMessageToParent = message => this.props.fetchToken()
-    .then(token => this.props.sourceWindow.postMessage(
-      Object.assign({token}, message), 'http://localhost:3000'));
 
   render() {
     return (
@@ -97,13 +48,21 @@ class App extends Component {
   };
 }
 
-// App.propTypes = {
-//   text: PropTypes.string.isRequired,
-//   sourceWindow: PropTypes.any,
-//   setText: PropTypes.func.isRequired,
-//   setSourceWindow: PropTypes.func.isRequired,
-//   fetchToken: PropTypes.func.isRequired
-// };
+App.propTypes = {
+  pieces: PropTypes.array.isRequired,
+  move: PropTypes.shape({
+    from: PropTypes.string.isRequired,
+    to: PropTypes.string.isRequired
+  }),
+  piece: PropTypes.object,
+  dragging: PropTypes.bool,
+  communicator: PropTypes.any,
+  currentPlayer: PropTypes.string.isRequired,
+  handleMovePiece: PropTypes.func.isRequired,
+  handleDragPiece: PropTypes.func.isRequired,
+  setBoardState: PropTypes.func.isRequired,
+  setCommunicator: PropTypes.func.isRequired
+};
 
 const mapStateToProps = state => {
   return {
@@ -112,17 +71,16 @@ const mapStateToProps = state => {
     piece: state.board.piece,
     dragging: state.board.dragging,
     currentPlayer: state.board.currentPlayer,
-    sourceWindow: state.comm.sourceWindow
+    communicator: state.comm.communicator
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    setSourceWindow: sourceWindow => dispatch(setSourceWindow(sourceWindow)),
-    fetchToken: () => dispatch(fetchToken()),
     handleMovePiece: (piece, start, end) => dispatch(handleMovePiece(piece, start, end)),
     handleDragPiece: (piece, start, dragAllowed) => dispatch(handleDragPiece(piece, start, dragAllowed)),
-    setBoardState: state => dispatch(setBoardState(state))
+    setBoardState: state => dispatch(setBoardState(state)),
+    setCommunicator: communicator => dispatch(setCommunicator(communicator))
   };
 };
 

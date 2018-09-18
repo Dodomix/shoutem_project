@@ -1,6 +1,6 @@
 {
-  "name": "shoutem_project",
-  "version": "0.1.0",
+  "name": "shoutem_project_player",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "@babel/runtime": "7.0.0-beta.55",
@@ -12,7 +12,8 @@
     "react-redux": "^5.0.7",
     "react-scripts": "1.1.4",
     "redux": "^4.0.0",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "^2.3.0",
+    "communicator": "file:../communicator"
   },
   "scripts": {
     "start": "react-scripts start",

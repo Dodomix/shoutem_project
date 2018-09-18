@@ -1,0 +1,9 @@
+{
+  "name": "communicator",
+  "version": "1.0.0",
+  "private": true,
+  "files": [
+    "communicator-child.js",
+    "communicator-parent.js"
+  ]
+}

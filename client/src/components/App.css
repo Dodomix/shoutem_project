@@ -1,29 +1,29 @@
 .App {
-  text-align: center;
+    text-align: center;
 }
 
 #player1, #player2 {
-  width: 500px;
-  height: 550px;
+    width: 500px;
+    height: 550px;
 }
 
 #loader {
-  height: 100px;
-  width: 100px;
-  vertical-align: middle;
+    height: 100px;
+    width: 100px;
+    vertical-align: middle;
 }
 
 .background {
-  background: rgba(0, 0, 0, 0.3);
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
 }
 
 .aligning-block {
-  display: inline-block;
-  vertical-align: middle;
-  height: 100%;
+    display: inline-block;
+    vertical-align: middle;
+    height: 100%;
 }
