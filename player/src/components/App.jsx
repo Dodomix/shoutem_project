@@ -12,12 +12,13 @@ import {
   setBoardState
 } from '../actions';
 
-import CommunicatorChild from 'communicator/communicator-child';
+import CommunicatorChild from 'communicator/CommunicatorChild';
 
 class App extends Component {
-
   componentDidMount() {
-    this.props.setCommunicator(new CommunicatorChild(this.props.setBoardState));
+    const communicator = new CommunicatorChild();
+    communicator.initialize(this.props.setBoardState);
+    this.props.setCommunicator(communicator);
   }
 
   _handleDrag = (piece, start) => {

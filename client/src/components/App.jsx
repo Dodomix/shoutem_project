@@ -8,11 +8,13 @@ import {
   setCommunicator
 } from '../actions';
 
-import CommunicatorParent from 'communicator/communicator-parent';
+import CommunicatorParent from 'communicator/CommunicatorParent';
 
 class App extends Component {
   componentDidMount() {
-    setCommunicator(new CommunicatorParent(this.props.components));
+    const communicator = new CommunicatorParent();
+    communicator.initialize(this.props.components);
+    this.props.setCommunicator(communicator);
   }
 
   render() {
@@ -30,13 +32,15 @@ class App extends Component {
 
 App.propTypes = {
   components: PropTypes.object.isRequired,
+  comunicator: PropTypes.any,
   assignIframe: PropTypes.func.isRequired,
   setCommunicator: PropTypes.func.isRequired
 };
 
 const mapStateToProps = state => {
   return {
-    components: state.iframe.components
+    components: state.iframe.components,
+    communicator: state.iframe.communicator
   };
 };
 

@@ -17,14 +17,13 @@ expected format for `jsonwebtoken` so to remove it and create the correct public
 
 
 After this, you can start all apps by running `yarn dev`. This will start two servers 
-(one for the main app and one for the minor iframe apps), the main app and the iframe apps. Ports 3000-3003, 5000
-and 5001 will be 
-taken with the main app running on port 3000.
+(one for the main app and one for the minor iframe apps), the main app and the iframe apps. Ports 3000-3002, 5000
+and 5001 will be taken with the main app running on port 3000.
 
 ##### Quality of life
 
 To stop React from opening a browser tab for each application, you can create `.env` files in the directories of apps
-you prefer not be opened (recommended for `content-editor`, `style-editor` and `malicious-page`) with the following
+you prefer not be opened (recommended for the `player` app) with the following
 content:
 
     BROWSER=none
