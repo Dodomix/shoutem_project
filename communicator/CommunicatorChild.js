@@ -1,21 +1,37 @@
 import {
   DATA_REQUEST,
-  DATA_RESPONSE, REQUEST_FAILED,
+  DATA_RESPONSE,
+  REGISTER,
+  REQUEST_FAILED,
   REQUEST_SUCCEEDED,
   STATE_UPDATED,
-  UPDATE_STATE,
-  REGISTER
+  UPDATE_STATE
 } from "./responseTypeConstants";
 
+const noop = () => {
+};
+const defaultHandlers = {
+  onInvalidOrigin: noop,
+  onInvalidSource: noop,
+  onReceiveState: noop,
+  onRequestSucceeded: noop,
+  onRequestFailed: noop,
+  onStateUpdated: noop,
+  onFetchTokenFailed: noop,
+  onUnknownMessage: noop
+};
+
 export default class CommunicatorChild {
-  initialize(onReceiveState) {
+  constructor(handlers) {
+    this.server = 'http://localhost:5001';
+    this.parentOrigin = 'http://localhost:3000';
+    this.handlers = Object.assign({}, defaultHandlers, handlers);
+  }
+
+  initialize() {
     if (!window) {
       throw "Browser window is required to initialize communicator";
     }
-
-    this.server = 'http://localhost:5001';
-    this.parentOrigin = 'http://localhost:3000';
-    this.onReceiveState = onReceiveState;
 
     window.addEventListener('message', this._messageEventHandler.bind(this));
   }
@@ -25,33 +41,34 @@ export default class CommunicatorChild {
       return;
     }
     if (e.origin !== this.parentOrigin) {
-      alert('Component received message with invalid origin: ' + e.origin);
+      this.handlers.onInvalidOrigin(e.origin);
     } else {
-      if (!this.sourceWindow && e.data.type === REGISTER) {
-        this.sourceWindow = e.source;
+      if (!this.parentSourceWindow && e.data.type === REGISTER) {
+        this.parentSourceWindow = e.source;
         this._postMessageToParent({
           type: DATA_REQUEST
         });
-      } else if (this.sourceWindow !== e.source) {
-        alert('Component received message with invalid source.');
+      } else if (this.parentSourceWindow !== e.source) {
+        this.handlers.onInvalidSource(e.source);
       } else {
         switch (e.data.type) {
           case DATA_RESPONSE:
-            if (this.onReceiveState) {
-              this.onReceiveState(e.data.state);
-            }
+            this.handlers.onReceiveState(e.data.state);
             break;
           case REQUEST_SUCCEEDED:
+            this.handlers.onRequestSucceeded();
             break;
           case REQUEST_FAILED:
+            this.handlers.onRequestFailed(e.data.reason);
             break;
           case STATE_UPDATED:
+            this.handlers.onStateUpdated();
             this._postMessageToParent({
               type: DATA_REQUEST
             });
             break;
           default:
-            alert('Unrecognized message type: ' + e.data.type);
+            this.handlers.onUnknownMessage(e.data.type);
         }
       }
     }
@@ -66,7 +83,7 @@ export default class CommunicatorChild {
 
   _postMessageToParent(message) {
     return this.fetchToken()
-      .then(token => this.sourceWindow.postMessage(
+      .then(token => this.parentSourceWindow.postMessage(
         Object.assign({token}, message), this.parentOrigin));
   }
 
@@ -74,8 +91,7 @@ export default class CommunicatorChild {
     return this._callApi('/api/token').then(body => {
       return body.token;
     }).catch(err => {
-      console.log(err);
-      alert('Cannot fetch token');
+      this.handlers.onFetchTokenFailed(err.message.substr(4));
     });
   };
 

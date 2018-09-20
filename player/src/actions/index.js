@@ -1,9 +1,4 @@
-import {
-  HANDLE_DRAG_PIECE,
-  HANDLE_MOVE_PIECE,
-  SET_BOARD_STATE,
-  SET_COMMUNICATOR
-} from './actionConstants';
+import {HANDLE_DRAG_PIECE, HANDLE_MOVE_PIECE, SET_BOARD_STATE, SET_COMMUNICATOR} from './actionConstants';
 
 export const handleMovePiece = (piece, start, end) => ({
   type: HANDLE_MOVE_PIECE,

@@ -4,7 +4,8 @@ import {HANDLE_DRAG_PIECE, HANDLE_MOVE_PIECE, SET_BOARD_STATE} from '../actions/
 const initialState = {
   currentPlayer: 'white',
   pieces: Chess.getDefaultLineup(),
-  piece: null
+  piece: null,
+  gameStatus: null
 };
 
 const formatMove = action => {
@@ -37,6 +38,7 @@ const board = (state = initialState, action) => {
       return Object.assign({}, state, {
         pieces: [].concat(action.state.board.white, action.state.board.black),
         currentPlayer: action.state.currentPlayer,
+        gameStatus: action.state.gameStatus,
         piece: null
       });
     default:

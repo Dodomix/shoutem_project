@@ -5,23 +5,27 @@ import './App.css';
 import Chess from 'react-chess';
 
 import {connect} from 'react-redux';
-import {
-  setCommunicator,
-  handleDragPiece,
-  handleMovePiece,
-  setBoardState
-} from '../actions';
+import {handleDragPiece, handleMovePiece, setBoardState, setCommunicator} from '../actions';
 
 import CommunicatorChild from 'communicator/CommunicatorChild';
 
 class App extends Component {
   componentDidMount() {
-    const communicator = new CommunicatorChild();
-    communicator.initialize(this.props.setBoardState);
+    const communicator = new CommunicatorChild({
+      onInvalidOrigin: origin => alert('Component received message with invalid origin: ' + origin),
+      onInvalidSource: () => alert('Component received message with invalid source.'),
+      onReceiveState: this.props.setBoardState,
+      onFetchTokenFailed: message => alert(message),
+      onUnknownMessage: type => alert('Unrecognized message type: ' + type)
+    });
+    communicator.initialize();
     this.props.setCommunicator(communicator);
   }
 
   _handleDrag = (piece, start) => {
+    if (this.props.gameStatus) { // game is over
+      return false;
+    }
     const dragging = this.props.dragging;
     const savedPiece = this.props.piece;
     const dragAllowed = dragging || // if already dragging, the old piece was returned to its position
@@ -42,8 +46,9 @@ class App extends Component {
   render() {
     return (
       <div className="App">
+        <div>{this.props.gameStatus}</div>
         <Chess pieces={this.props.pieces} onMovePiece={this.props.handleMovePiece} onDragStart={this._handleDrag}/>
-        <Button className="save-button" onClick={this._executeMove}>Save</Button>
+        <Button className="save-button" onClick={this._executeMove}>Submit</Button>
       </div>
     );
   };
@@ -52,12 +57,13 @@ class App extends Component {
 App.propTypes = {
   pieces: PropTypes.array.isRequired,
   move: PropTypes.shape({
-    from: PropTypes.string.isRequired,
-    to: PropTypes.string.isRequired
+    from: PropTypes.string,
+    to: PropTypes.string
   }),
   piece: PropTypes.object,
   dragging: PropTypes.bool,
   communicator: PropTypes.any,
+  gameStatus: PropTypes.string,
   currentPlayer: PropTypes.string.isRequired,
   handleMovePiece: PropTypes.func.isRequired,
   handleDragPiece: PropTypes.func.isRequired,
@@ -72,6 +78,7 @@ const mapStateToProps = state => {
     piece: state.board.piece,
     dragging: state.board.dragging,
     currentPlayer: state.board.currentPlayer,
+    gameStatus: state.board.gameStatus,
     communicator: state.comm.communicator
   };
 };

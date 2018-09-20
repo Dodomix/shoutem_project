@@ -2,10 +2,8 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const bodyParser = require('body-parser');
-const Chess = require('chess.js').Chess;
 const _ = require('lodash');
-
-const chess = new Chess();
+const util = require('./server-util');
 
 const pub = fs.readFileSync('public.pem');
 
@@ -20,89 +18,42 @@ app.use((req, res, next) => {
   next();
 });
 
-const squareToPosition = (piece, square) => piece + '@' + square;
-
-const boardToPositionArrays = () => {
-  const pieces = {
-    white: [],
-    black: []
-  };
-  chess.SQUARES.forEach(square => {
-    const piece = chess.get(square);
-    if (piece !== null) {
-      if (piece.color === 'b') {
-        pieces.black.push(squareToPosition(piece.type, square));
-      } else {
-        pieces.white.push(squareToPosition(piece.type.toUpperCase(), square));
-      }
-    }
-  });
-  return pieces;
-};
-
 const gameState = {
-  board: boardToPositionArrays(),
+  board: util.boardToPositionArrays(),
   currentPlayer: 'white',
   move: {
     black: null,
     white: null
-  }
-};
-
-const toggleCurrentPlayer = state => state.currentPlayer = state.currentPlayer === 'white' ? 'black' : 'white';
-
-const getReadableState = permissions => {
-  const readableState = {};
-  _.forEach(permissions.read, permission => _.set(readableState, permission, _.get(gameState, permission)));
-  return readableState;
-};
-
-const hasPermission = (permissions, stateUpdate) => {
-  const permittedStateUpdate = {};
-  _.forEach(permissions.write, permission => _.set(permittedStateUpdate, permission, _.get(stateUpdate, permission)));
-  return _.isEqual(stateUpdate, permittedStateUpdate);
-};
-
-const executeActions = state => {
-  let valid = true;
-  if (state.move) {
-    valid = valid && chess.move(state.move[state.currentPlayer], {
-      sloppy: true
-    });
-  }
-  if (valid) {
-    state.board = boardToPositionArrays();
-    toggleCurrentPlayer(state);
-  }
-  return valid;
+  },
+  gameStatus: null
 };
 
 app.get('/api/state', (req, res) => {
-  const tokenData = jwt.verify(req.query.token, pub, { algorithm: 'RS512'});
+  const tokenData = jwt.verify(req.query.token, pub, {algorithm: 'RS512'});
   if (req.query.origin !== tokenData.origin) {
     res.status(403).send({
       message: 'Invalid origin'
     });
   } else {
-    res.send(getReadableState(tokenData.permissions));
+    res.send(util.getReadableState(gameState, tokenData.permissions));
   }
 });
 
 app.post('/api/state', (req, res) => {
   const body = req.body;
-  const tokenData = jwt.verify(body.token, pub, { algorithm: 'RS512'});
+  const tokenData = jwt.verify(body.token, pub, {algorithm: 'RS512'});
   if (body.origin !== tokenData.origin) {
     res.status(403).send({
       message: 'Invalid origin'
     });
-  } else if (!hasPermission(tokenData.permissions, body.stateUpdate)) {
+  } else if (!util.hasPermission(tokenData.permissions, body.stateUpdate)) {
     res.status(403).send({
       message: 'Action not permitted'
     });
   } else {
     const updatedState = {};
     _.assign(updatedState, gameState, body.stateUpdate);
-    if (executeActions(updatedState)) {
+    if (util.executeActions(updatedState)) {
       _.assign(gameState, updatedState);
       res.send({
         message: 'State updated'

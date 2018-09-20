@@ -1,7 +1,4 @@
-import {
-  ASSIGN_IFRAME,
-  SET_COMMUNICATOR
-} from './actionConstants';
+import {ASSIGN_IFRAME, SET_COMMUNICATOR} from './actionConstants';
 
 export const assignIframe = (iframeName, ref) => ({
   type: ASSIGN_IFRAME,

@@ -1,19 +1,36 @@
 import {
   DATA_REQUEST,
-  DATA_RESPONSE, REQUEST_FAILED,
+  DATA_RESPONSE,
+  REGISTER,
+  REQUEST_FAILED,
   REQUEST_SUCCEEDED,
   STATE_UPDATED,
-  UPDATE_STATE,
-  REGISTER
+  UPDATE_STATE
 } from "./responseTypeConstants";
 
+const noop = () => {
+};
+const defaultHandlers = {
+  onInvalidOrigin: noop,
+  onInvalidSource: noop,
+  onDataRequest: noop,
+  onUpdateStateRequest: noop,
+  onFetchFailed: noop,
+  onPostFailed: noop,
+  onUnknownMessage: noop
+};
+
 export default class CommunicatorParent {
+  constructor(handlers) {
+    this.server = 'http://localhost:5000';
+    this.handlers = Object.assign({}, defaultHandlers, handlers);
+  }
+
   initialize(components) {
     if (!window) {
       throw "Browser window is required to initialize communicator";
     }
 
-    this.server = 'http://localhost:5000';
     this.components = components;
 
     this._executeForEachComponent(this.components, component => {
@@ -33,11 +50,12 @@ export default class CommunicatorParent {
     }
     const component = this.components[Object.keys(this.components).find(key => this.components[key].origin === e.origin)];
     if (!component) {
-      alert('Received message with unknown origin: ' + e.origin);
+      this.handlers.onInvalidOrigin(e.origin);
     } else if (component.iframe.contentWindow !== e.source) {
-      alert('Received message with unknown source.');
+      this.handlers.onInvalidSource(e.source);
     } else {
       if (e.data.type === DATA_REQUEST) {
+        this.handlers.onDataRequest();
         this.fetchState(e.origin, e.data.token).then(state => {
           this._postMessageToIframeComponent(component, {
             type: DATA_RESPONSE,
@@ -50,6 +68,7 @@ export default class CommunicatorParent {
           });
         });
       } else if (e.data.type === UPDATE_STATE) {
+        this.handlers.onUpdateStateRequest(e.data.stateUpdate);
         this.postState({
           token: e.data.token,
           stateUpdate: e.data.stateUpdate,
@@ -68,7 +87,7 @@ export default class CommunicatorParent {
           });
         });
       } else {
-        alert('Unrecognized message type: ' + e.data.type);
+        this.handlers.onUnknownMessage(e.data.type);
       }
     }
   }
@@ -89,7 +108,7 @@ export default class CommunicatorParent {
     }).then(body => {
       return body;
     }).catch(err => {
-      alert(err.message.substr(4));
+      this.handlers.onFetchFailed(err.message);
       throw err; // rethrow error
     });
   }
@@ -103,9 +122,7 @@ export default class CommunicatorParent {
       },
       body: JSON.stringify(data)
     }).catch(err => {
-      if (err.message.startsWith('403')) {
-        alert(err.message.substr(4));
-      }
+      this.handlers.onPostFailed(err.message.substr(4));
       throw err; // rethrow error
     });
   }

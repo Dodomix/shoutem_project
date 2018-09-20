@@ -21,21 +21,21 @@ const appData = {
   'http://localhost:3001': {
     origin: 'http://localhost:3001',
     permissions: {
-      read: ['board', 'currentPlayer'],
+      read: ['board', 'currentPlayer', 'gameStatus'],
       write: ['move.white']
     }
   },
   'http://localhost:3002': {
     origin: 'http://localhost:3002',
     permissions: {
-      read: ['board', 'currentPlayer'],
+      read: ['board', 'currentPlayer', 'gameStatus'],
       write: ['move.black']
     }
   }
 };
 
 app.get('/api/token', (req, res) => {
-  const signed = jwt.sign(appData[req.get('origin')], cert, { algorithm: 'RS512'});
+  const signed = jwt.sign(appData[req.get('origin')], cert, {algorithm: 'RS512'});
   res.send({
     token: signed
   });

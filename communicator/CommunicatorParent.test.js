@@ -2,7 +2,8 @@ import CommunicatorParent from './CommunicatorParent';
 import {
   DATA_REQUEST,
   DATA_RESPONSE,
-  REGISTER, REQUEST_FAILED,
+  REGISTER,
+  REQUEST_FAILED,
   REQUEST_SUCCEEDED,
   STATE_UPDATED,
   UPDATE_STATE
@@ -87,17 +88,17 @@ test('fetchState makes the correct api call', done => {
   });
 });
 
-test('fetchState in case of error shows an alert with the message', done => {
+test('fetchState in case of error calls the error handler with the message', done => {
   communicatorParent._callApi = jest.fn(() => Promise.reject({
-      message: '403 Access forbidden'
-    }));
-  window.alert = jest.fn();
+    message: '403 Access forbidden'
+  }));
+  communicatorParent.handlers.onFetchFailed = jest.fn();
 
   communicatorParent.fetchState().catch(err => {
     expect(err).toEqual({
-      message: '403 Access forbidden'
+      message: 'Access forbidden'
     });
-    expect(window.alert.mock.calls[0][0]).toEqual('Access forbidden');
+    expect(communicatorParent.handlers.onFetchFailed.mock.calls[0][0]).toEqual('Access forbidden');
     done();
   });
 });
@@ -122,17 +123,17 @@ test('postState makes the correct api call', done => {
   });
 });
 
-test('postState in case of error shows an alert with the message', done => {
+test('postState in case of error calls the error handler with the message', done => {
   communicatorParent._callApi = jest.fn(() => Promise.reject({
     message: '403 Access forbidden'
   }));
-  window.alert = jest.fn();
+  communicatorParent.handlers.onPostFailed = jest.fn();
 
   communicatorParent.postState().catch(err => {
     expect(err).toEqual({
       message: '403 Access forbidden'
     });
-    expect(window.alert.mock.calls[0][0]).toEqual('Access forbidden');
+    expect(communicatorParent.handlers.onPostFailed.mock.calls[0][0]).toEqual('Access forbidden');
     done();
   });
 });
@@ -208,8 +209,8 @@ test('If receives a data request, fetches data and sends a data response', done 
   });
 });
 
-test('Shows an alert if a message is received from invalid origin', () => {
-  window.alert = jest.fn();
+test('Calls the error handler if a message is received from invalid origin', () => {
+  communicatorParent.handlers.onInvalidOrigin = jest.fn();
   const components = {
     c1: {
       origin: 'http://localhost:3001',
@@ -226,11 +227,11 @@ test('Shows an alert if a message is received from invalid origin', () => {
     origin: 'http://localhost:3002'
   });
 
-  expect(window.alert.mock.calls[0][0]).toEqual('Received message with unknown origin: http://localhost:3002');
+  expect(communicatorParent.handlers.onInvalidOrigin.mock.calls[0][0]).toEqual('http://localhost:3002');
 });
 
-test('Shows an alert if a message is received from a source which does not match the origin', () => {
-  window.alert = jest.fn();
+test('Calls the error handler if a message is received from a source which does not match the origin', () => {
+  communicatorParent.handlers.onInvalidSource = jest.fn();
   const contentWindow = {
     is: 'contentWindow'
   };
@@ -255,7 +256,9 @@ test('Shows an alert if a message is received from a source which does not match
     source: fakeContentWindow
   });
 
-  expect(window.alert.mock.calls[0][0]).toEqual('Received message with unknown source.');
+  expect(communicatorParent.handlers.onInvalidSource.mock.calls[0][0]).toEqual({
+    is: 'fakeContentWindow'
+  });
 });
 
 test('If receives a data request, fetches data and sends a data response', done => {
@@ -357,6 +360,7 @@ test('If receives a request to update state, updates it and sends a request succ
     });
     return Promise.resolve();
   });
+  communicatorParent.handlers.onUpdateStateRequest = jest.fn();
   const contentWindow1 = {
     postMessage: jest.fn()
   };
@@ -400,14 +404,22 @@ test('If receives a request to update state, updates it and sends a request succ
   });
 
   setTimeout(() => { // run after async calls since jest doesn't have flush
+    expect(contentWindow1.postMessage.mock.calls.length).toEqual(2);
     expect(contentWindow1.postMessage.mock.calls[0][0]).toEqual({
       type: REQUEST_SUCCEEDED
     });
     expect(contentWindow1.postMessage.mock.calls[1][0]).toEqual({
       type: STATE_UPDATED
     });
+    expect(contentWindow2.postMessage.mock.calls.length).toEqual(1);
     expect(contentWindow2.postMessage.mock.calls[0][0]).toEqual({
       type: STATE_UPDATED
+    });
+    expect(communicatorParent.handlers.onUpdateStateRequest.mock.calls.length).toEqual(1);
+    expect(communicatorParent.handlers.onUpdateStateRequest.mock.calls[0][0]).toEqual({
+      a: {
+        b: 3
+      }
     });
     done();
   }, 0);
@@ -462,4 +474,43 @@ test('If receives a request to update state and update fails, sends a message ab
     });
     done();
   }, 0);
+});
+
+test('Calls the unknown message handler if receives an unknown message type', () => {
+  communicatorParent.handlers.onUnknownMessage = jest.fn();
+  const contentWindow1 = {
+    postMessage: jest.fn()
+  };
+  const components = {
+    c1: {
+      origin: 'http://localhost:3001',
+      iframe: {
+        addEventListener: (eventName, action) => {
+          expect(eventName).toEqual('load');
+        },
+        contentWindow: contentWindow1
+      }
+    },
+    c2: {
+      origin: 'http://localhost:3002',
+      iframe: {
+        addEventListener: (eventName, action) => {
+          expect(eventName).toEqual('load');
+        }
+      }
+    }
+  };
+  communicatorParent.initialize(components);
+
+  communicatorParent._messageEventHandler({
+    origin: 'http://localhost:3001',
+    source: contentWindow1,
+    data: {
+      type: 'some unknown type',
+      token: 'token1'
+    }
+  });
+
+  expect(communicatorParent.handlers.onUnknownMessage.mock.calls.length).toEqual(1);
+  expect(communicatorParent.handlers.onUnknownMessage.mock.calls[0][0]).toEqual('some unknown type');
 });

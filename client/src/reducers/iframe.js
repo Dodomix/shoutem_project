@@ -1,7 +1,4 @@
-import {
-  ASSIGN_IFRAME,
-  SET_COMMUNICATOR
-} from '../actions/actionConstants';
+import {ASSIGN_IFRAME, SET_COMMUNICATOR} from '../actions/actionConstants';
 
 const initialState = {
   components: {

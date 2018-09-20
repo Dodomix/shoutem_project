@@ -3,16 +3,19 @@ import PropTypes from 'prop-types';
 import './App.css';
 
 import {connect} from 'react-redux';
-import {
-  assignIframe,
-  setCommunicator
-} from '../actions';
+import {assignIframe, setCommunicator} from '../actions';
 
 import CommunicatorParent from 'communicator/CommunicatorParent';
 
 class App extends Component {
   componentDidMount() {
-    const communicator = new CommunicatorParent();
+    const communicator = new CommunicatorParent({
+      onInvalidOrigin: origin => alert('Received message with unknown origin: ' + origin),
+      onInvalidSource: () => alert('Received message with unknown source.'),
+      onUnknownMessage: type => alert('Unrecognized message type: ' + type),
+      onFetchFailed: message => alert(message),
+      onPostFailed: message => alert(message)
+    });
     communicator.initialize(this.props.components);
     this.props.setCommunicator(communicator);
   }
