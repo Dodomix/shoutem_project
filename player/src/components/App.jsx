@@ -46,7 +46,9 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <div>{this.props.gameStatus}</div>
+        <h2 className="game-status">{this.props.gameStatus}</h2>
+        <h3 className="title">{this.props.whitePlayerTitle}{this.props.blackPlayerTitle}</h3>
+        <h3 className="title">Turn: {this.props.currentPlayer}</h3>
         <Chess pieces={this.props.pieces} onMovePiece={this.props.handleMovePiece} onDragStart={this._handleDrag}/>
         <Button className="save-button" onClick={this._executeMove}>Submit</Button>
       </div>
@@ -64,6 +66,8 @@ App.propTypes = {
   dragging: PropTypes.bool,
   communicator: PropTypes.any,
   gameStatus: PropTypes.string,
+  whitePlayerTitle: PropTypes.string,
+  blackPlayerTitle: PropTypes.string,
   currentPlayer: PropTypes.string.isRequired,
   handleMovePiece: PropTypes.func.isRequired,
   handleDragPiece: PropTypes.func.isRequired,
@@ -79,6 +83,8 @@ const mapStateToProps = state => {
     dragging: state.board.dragging,
     currentPlayer: state.board.currentPlayer,
     gameStatus: state.board.gameStatus,
+    whitePlayerTitle: state.board.whitePlayerTitle,
+    blackPlayerTitle: state.board.blackPlayerTitle,
     communicator: state.comm.communicator
   };
 };

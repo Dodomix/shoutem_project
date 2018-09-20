@@ -25,7 +25,9 @@ const gameState = {
     black: null,
     white: null
   },
-  gameStatus: null
+  gameStatus: null,
+  whitePlayerTitle: 'Player 1 (white)',
+  blackPlayerTitle: 'Player 2 (black)'
 };
 
 app.get('/api/state', (req, res) => {

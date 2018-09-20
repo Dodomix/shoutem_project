@@ -39,6 +39,8 @@ const board = (state = initialState, action) => {
         pieces: [].concat(action.state.board.white, action.state.board.black),
         currentPlayer: action.state.currentPlayer,
         gameStatus: action.state.gameStatus,
+        whitePlayerTitle: action.state.whitePlayerTitle,
+        blackPlayerTitle: action.state.blackPlayerTitle,
         piece: null
       });
     default:
