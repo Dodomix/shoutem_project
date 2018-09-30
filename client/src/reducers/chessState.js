@@ -1,5 +1,7 @@
-const Chess = require('chess.js').Chess;
-const _ = require('lodash');
+import {
+  UPDATE_CHESS_STATE
+} from '../actions/actionConstants';
+import * as Chess from 'chess.js';
 
 const chess = new Chess();
 
@@ -25,20 +27,6 @@ const boardToPositionArrays = () => {
 
 const toggleCurrentPlayer = state => state.currentPlayer = state.currentPlayer === 'white' ? 'black' : 'white';
 
-const getReadableState = (state, permissions) => {
-  const readableState = {};
-  _.forEach(permissions.read, permission => _.set(readableState, permission, _.get(state, permission)));
-  return readableState;
-};
-
-const hasPermission = (permissions, stateUpdate) => {
-  const permittedStateUpdate = {};
-  permissions.write
-    .filter(permission => _.get(stateUpdate, permission))
-    .forEach(permission => _.set(permittedStateUpdate, permission, _.get(stateUpdate, permission)));
-  return _.isEqual(stateUpdate, permittedStateUpdate);
-};
-
 const executeActions = state => {
   let valid = true;
   if (state.move) {
@@ -58,11 +46,27 @@ const executeActions = state => {
   return valid;
 };
 
-module.exports = {
-  squareToPosition: squareToPosition,
-  boardToPositionArrays: boardToPositionArrays,
-  toggleCurrentPlayer: toggleCurrentPlayer,
-  getReadableState: getReadableState,
-  hasPermission: hasPermission,
-  executeActions: executeActions
+const initialState = {
+  board: boardToPositionArrays(),
+  currentPlayer: 'white',
+  move: {
+    black: null,
+    white: null
+  },
+  gameStatus: null,
+  whitePlayerTitle: 'Player 1 (white)',
+  blackPlayerTitle: 'Player 2 (black)'
 };
+
+const chessState = (state = initialState, action) => {
+  switch (action.type) {
+    case UPDATE_CHESS_STATE:
+      const updatedState = Object.assign({}, state, action.stateUpdate);
+      updatedState.actionValid = executeActions(updatedState);
+      return updatedState;
+    default:
+      return state;
+  }
+};
+
+export default chessState;

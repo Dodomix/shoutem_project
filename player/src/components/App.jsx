@@ -16,7 +16,8 @@ class App extends Component {
       onInvalidSource: () => alert('Component received message with invalid source.'),
       onReceiveState: this.props.setBoardState,
       onFetchTokenFailed: message => alert(message),
-      onUnknownMessage: type => alert('Unrecognized message type: ' + type)
+      onUnknownMessage: type => alert('Unrecognized message type: ' + type),
+      onRequestFailed: message => alert(message)
     });
     communicator.initialize();
     this.props.setCommunicator(communicator);

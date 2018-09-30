@@ -68,76 +68,6 @@ test('_postMessageToIframeComponent posts message to the given iframe component'
   });
 });
 
-test('fetchState makes the correct api call', done => {
-  communicatorParent._callApi = jest.fn(() => Promise.resolve({
-    is: 'body'
-  }));
-
-  communicatorParent.fetchState('localhost', 'token').then(body => {
-    expect(body).toEqual({
-      is: 'body'
-    });
-    expect(communicatorParent._callApi.mock.calls.length).toEqual(1);
-    expect(communicatorParent._callApi.mock.calls[0][0]).toEqual('/api/state?origin=localhost&token=token');
-    expect(communicatorParent._callApi.mock.calls[0][1]).toEqual({
-      headers: {
-        'Accept': 'application/json'
-      },
-    });
-    done();
-  });
-});
-
-test('fetchState in case of error calls the error handler with the message', done => {
-  communicatorParent._callApi = jest.fn(() => Promise.reject({
-    message: '403 Access forbidden'
-  }));
-  communicatorParent.handlers.onFetchFailed = jest.fn();
-
-  communicatorParent.fetchState().catch(err => {
-    expect(err).toEqual({
-      message: 'Access forbidden'
-    });
-    expect(communicatorParent.handlers.onFetchFailed.mock.calls[0][0]).toEqual('Access forbidden');
-    done();
-  });
-});
-
-test('postState makes the correct api call', done => {
-  communicatorParent._callApi = jest.fn(() => Promise.resolve());
-
-  communicatorParent.postState({
-    is: 'state-update'
-  }).then(() => {
-    expect(communicatorParent._callApi.mock.calls.length).toEqual(1);
-    expect(communicatorParent._callApi.mock.calls[0][0]).toEqual('/api/state');
-    expect(communicatorParent._callApi.mock.calls[0][1]).toEqual({
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: '{"is":"state-update"}'
-    });
-    done();
-  });
-});
-
-test('postState in case of error calls the error handler with the message', done => {
-  communicatorParent._callApi = jest.fn(() => Promise.reject({
-    message: '403 Access forbidden'
-  }));
-  communicatorParent.handlers.onPostFailed = jest.fn();
-
-  communicatorParent.postState().catch(err => {
-    expect(err).toEqual({
-      message: '403 Access forbidden'
-    });
-    expect(communicatorParent.handlers.onPostFailed.mock.calls[0][0]).toEqual('Access forbidden');
-    done();
-  });
-});
-
 test('After loading, each component receives the register message', done => {
   const components = {
     c1: {
@@ -167,7 +97,7 @@ test('After loading, each component receives the register message', done => {
 });
 
 test('If receives a data request, fetches data and sends a data response', done => {
-  communicatorParent.fetchState = jest.fn(() => Promise.resolve({
+  communicatorParent.handlers.getReadableState = jest.fn(() => ({
     is: 'state'
   }));
   const contentWindow = {
@@ -262,7 +192,7 @@ test('Calls the error handler if a message is received from a source which does 
 });
 
 test('If receives a data request, fetches data and sends a data response', done => {
-  communicatorParent.fetchState = jest.fn(() => Promise.resolve({
+  communicatorParent.handlers.getReadableState = jest.fn(() => ({
     is: 'state'
   }));
   const contentWindow = {
@@ -305,9 +235,9 @@ test('If receives a data request, fetches data and sends a data response', done 
 });
 
 test('If receives a data request, and it fails, sends a request failed message', done => {
-  communicatorParent.fetchState = jest.fn(() => Promise.reject({
-    message: 'Request refused'
-  }));
+  communicatorParent.handlers.getReadableState = jest.fn(() => {
+    throw new Error('Request refused');
+  });
   const contentWindow = {
     postMessage: message => {
       expect(message).toEqual({
@@ -348,7 +278,7 @@ test('If receives a data request, and it fails, sends a request failed message',
 });
 
 test('If receives a request to update state, updates it and sends a request successful response and update state response', done => {
-  communicatorParent.postState = jest.fn(data => {
+  communicatorParent.handlers.updateState = jest.fn(data => {
     expect(data).toEqual({
       token: 'token1',
       stateUpdate: {
@@ -415,18 +345,12 @@ test('If receives a request to update state, updates it and sends a request succ
     expect(contentWindow2.postMessage.mock.calls[0][0]).toEqual({
       type: STATE_UPDATED
     });
-    expect(communicatorParent.handlers.onUpdateStateRequest.mock.calls.length).toEqual(1);
-    expect(communicatorParent.handlers.onUpdateStateRequest.mock.calls[0][0]).toEqual({
-      a: {
-        b: 3
-      }
-    });
     done();
   }, 0);
 });
 
 test('If receives a request to update state and update fails, sends a message about failed request', done => {
-  communicatorParent.postState = jest.fn(() => Promise.reject({
+  communicatorParent.handlers.updateState = jest.fn(() => Promise.reject({
     message: 'Request not valid'
   }));
   const contentWindow1 = {

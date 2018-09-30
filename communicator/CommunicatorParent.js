@@ -8,16 +8,13 @@ import {
   UPDATE_STATE
 } from "./responseTypeConstants";
 
-const noop = () => {
-};
+const noop = () => {};
 const defaultHandlers = {
   onInvalidOrigin: noop,
   onInvalidSource: noop,
-  onDataRequest: noop,
-  onUpdateStateRequest: noop,
-  onFetchFailed: noop,
-  onPostFailed: noop,
-  onUnknownMessage: noop
+  onUnknownMessage: noop,
+  getReadableState: noop,
+  updateState: () => Promise.resolve()
 };
 
 export default class CommunicatorParent {
@@ -28,7 +25,7 @@ export default class CommunicatorParent {
 
   initialize(components) {
     if (!window) {
-      throw "Browser window is required to initialize communicator";
+      throw new Error("Browser window is required to initialize communicator");
     }
 
     this.components = components;
@@ -55,21 +52,19 @@ export default class CommunicatorParent {
       this.handlers.onInvalidSource(e.source);
     } else {
       if (e.data.type === DATA_REQUEST) {
-        this.handlers.onDataRequest();
-        this.fetchState(e.origin, e.data.token).then(state => {
+        try {
           this._postMessageToIframeComponent(component, {
             type: DATA_RESPONSE,
-            state: state
+            state: this.handlers.getReadableState(e.origin, e.data.token)
           });
-        }).catch(err => {
+        } catch (err) {
           this._postMessageToIframeComponent(component, {
             type: REQUEST_FAILED,
             reason: err.message
           });
-        });
+        }
       } else if (e.data.type === UPDATE_STATE) {
-        this.handlers.onUpdateStateRequest(e.data.stateUpdate);
-        this.postState({
+        this.handlers.updateState({
           token: e.data.token,
           stateUpdate: e.data.stateUpdate,
           origin: e.origin
@@ -99,40 +94,4 @@ export default class CommunicatorParent {
   _postMessageToIframeComponent(component, message) {
     return component.iframe.contentWindow.postMessage(message, component.origin);
   }
-
-  fetchState(origin, token) {
-    return this._callApi(`/api/state?origin=${encodeURIComponent(origin)}&token=${encodeURIComponent(token)}`, {
-      headers: {
-        'Accept': 'application/json'
-      },
-    }).then(body => {
-      return body;
-    }).catch(err => {
-      this.handlers.onFetchFailed(err.message);
-      throw err; // rethrow error
-    });
-  }
-
-  postState(data) {
-    return this._callApi('/api/state', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    }).catch(err => {
-      this.handlers.onPostFailed(err.message.substr(4));
-      throw err; // rethrow error
-    });
-  }
-
-  async _callApi(path, options) {
-    const response = await fetch(`${this.server}${path}`, options);
-    const body = await response.json();
-
-    if (response.status !== 200) throw Error(`${response.status} ${body.message}`);
-
-    return body;
-  };
-}
+};
