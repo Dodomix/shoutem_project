@@ -13,7 +13,7 @@ import {
 
 import CommunicatorParent from 'communicator/CommunicatorParent';
 
-class App extends Component {
+export class App extends Component {
   async componentDidMount() {
     const pub = await (await fetch('../public.pem')).text();
     const communicator = new CommunicatorParent({

@@ -5,11 +5,10 @@
     "client": "cd client && yarn start",
     "player": "cd player && yarn start",
     "component-server": "nodemon component-server.js",
-    "setup-communicator": "cd communicator && npm install",
-    "setup-client": "cd client && npm install",
-    "setup-player": "cd player && npm install",
-    "setup-server": "npm install",
-    "setup": "concurrently \"yarn setup-server\" \"yarn setup-communicator\" \"yarn setup-client\" \"yarn setup-player\"",
+    "setup-communicator": "cd communicator && yarn install",
+    "setup-client": "cd client && yarn install",
+    "setup-player": "cd player && yarn install",
+    "setup": "yarn install && concurrently \"yarn setup-communicator\" \"yarn setup-client\" \"yarn setup-player\"",
     "dev": "concurrently --kill-others-on-fail \"yarn component-server\" \"yarn client\" \"PORT=3001 yarn player\" \"PORT=3002 yarn player\""
   },
   "dependencies": {

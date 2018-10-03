@@ -1,7 +1,7 @@
 
 ### Development
 
-To prepare the app, first run `yarn setup` which will run `npm install` in all the necessary directories and install 
+To prepare the app, first run `yarn setup` which will run `yarn install` in all the necessary directories and install 
 dependencies.
 
 After that, keys will need to be generated to use with `jsonwebtoken`. To generate these, first run, without specifying 
