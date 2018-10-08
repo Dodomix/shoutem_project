@@ -1,4 +1,5 @@
 import {
+  RESET,
   UPDATE_CHESS_STATE
 } from '../actions/actionConstants';
 import * as Chess from 'chess.js';
@@ -30,7 +31,8 @@ const toggleCurrentPlayer = state => state.currentPlayer = state.currentPlayer =
 const executeActions = state => {
   let valid = true;
   if (state.move) {
-    state.move[state.currentPlayer].promotion = 'q';
+    const move = getMove(state.move);
+    move.promotion = 'q';
     valid = valid && chess.move(state.move[state.currentPlayer], {
       sloppy: true
     });
@@ -46,6 +48,10 @@ const executeActions = state => {
   return valid;
 };
 
+const getMove = move => {
+  return move.white ? move.white : move.black;
+};
+
 const initialState = {
   board: boardToPositionArrays(),
   currentPlayer: 'white',
@@ -54,8 +60,8 @@ const initialState = {
     white: null
   },
   gameStatus: null,
-  whitePlayerTitle: 'Player 1 (white)',
-  blackPlayerTitle: 'Player 2 (black)'
+  isWhitePlayer: true,
+  isBlackPlayer: true
 };
 
 const chessState = (state = initialState, action) => {
@@ -64,6 +70,11 @@ const chessState = (state = initialState, action) => {
       const updatedState = Object.assign({}, state, action.stateUpdate);
       updatedState.actionValid = executeActions(updatedState);
       return updatedState;
+    case RESET:
+      chess.reset();
+      return Object.assign({}, state, {
+        board: boardToPositionArrays()
+      });
     default:
       return state;
   }

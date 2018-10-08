@@ -211,7 +211,8 @@ test('On state updated message, calls the correct handler and requests state dat
 test('Calls the unknown message handler if receives an unknown message type', () => {
   communicatorChild.handlers.onUnknownMessage = jest.fn();
   const parentSource = {
-    is: 'parentSource'
+    is: 'parentSource',
+    postMessage: () => {}
   };
   communicatorChild.parentSourceWindow = parentSource;
 

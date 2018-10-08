@@ -27,3 +27,7 @@
     vertical-align: middle;
     height: 100%;
 }
+
+.reset-button {
+ float: right;
+}

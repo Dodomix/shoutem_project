@@ -3,12 +3,14 @@ import PropTypes from 'prop-types';
 import './App.css';
 import * as jwt from 'jsonwebtoken';
 import * as _ from 'lodash';
+import Button from '@material-ui/core/Button';
 
 import {connect} from 'react-redux';
 import {
   assignIframe,
   setCommunicator,
-  updateChessState
+  updateChessState,
+  reset
 } from '../actions';
 
 import CommunicatorParent from 'communicator/CommunicatorParent';
@@ -60,10 +62,16 @@ export class App extends Component {
     return _.isEqual(stateUpdate, permittedStateUpdate);
   };
 
+  async _reset() {
+    await this.props.reset();
+    this.props.communicator.notifyStateUpdated();
+  }
+
   render() {
     const {components} = this.props;
     return (
       <div className="App">
+        <Button className="reset-button" onClick={this._reset.bind(this)}>Reset</Button>
         <iframe id="player1" ref={this.props.assignIframe.bind(this, 'player1')} title="player1"
                 src={components.player1.origin}/>
         <iframe id="player2" ref={this.props.assignIframe.bind(this, 'player2')} title="player2"
@@ -78,7 +86,8 @@ App.propTypes = {
   comunicator: PropTypes.any,
   chessState: PropTypes.object.isRequired,
   assignIframe: PropTypes.func.isRequired,
-  setCommunicator: PropTypes.func.isRequired
+  setCommunicator: PropTypes.func.isRequired,
+  reset: PropTypes.func.isRequired
 };
 
 const mapStateToProps = state => {
@@ -93,7 +102,8 @@ const mapDispatchToProps = dispatch => {
   return {
     assignIframe: (iframeName, ref) => dispatch(assignIframe(iframeName, ref)),
     setCommunicator: communicator => dispatch(setCommunicator(communicator)),
-    updateChessState: stateUpdate => dispatch(updateChessState(stateUpdate))
+    updateChessState: stateUpdate => dispatch(updateChessState(stateUpdate)),
+    reset: () => dispatch(reset())
   };
 };
 

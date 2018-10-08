@@ -1,7 +1,8 @@
 import {
   ASSIGN_IFRAME,
   SET_COMMUNICATOR,
-  UPDATE_CHESS_STATE
+  UPDATE_CHESS_STATE,
+  RESET
 } from './actionConstants';
 
 export const assignIframe = (iframeName, ref) => ({
@@ -18,4 +19,8 @@ export const setCommunicator = communicator => ({
 export const updateChessState = stateUpdate => ({
   type: UPDATE_CHESS_STATE,
   stateUpdate
+});
+
+export const reset = () => ({
+  type: RESET
 });

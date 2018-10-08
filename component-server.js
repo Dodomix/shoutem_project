@@ -21,14 +21,14 @@ const appData = {
   'http://localhost:3001': {
     origin: 'http://localhost:3001',
     permissions: {
-      read: ['board', 'currentPlayer', 'gameStatus', 'whitePlayerTitle'],
+      read: ['board', 'currentPlayer', 'gameStatus', 'isWhitePlayer'],
       write: ['move.white']
     }
   },
   'http://localhost:3002': {
     origin: 'http://localhost:3002',
     permissions: {
-      read: ['board', 'currentPlayer', 'gameStatus', 'blackPlayerTitle'],
+      read: ['board', 'currentPlayer', 'gameStatus', 'isBlackPlayer'],
       write: ['move.black']
     }
   }

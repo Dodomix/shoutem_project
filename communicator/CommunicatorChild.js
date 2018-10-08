@@ -74,17 +74,20 @@ export default class CommunicatorChild {
     }
   }
 
-  sendUpdateState(stateUpdate) {
+  sendUpdateState(stateUpdate, token) {
     this._postMessageToParent({
       type: UPDATE_STATE,
       stateUpdate: stateUpdate
-    });
+    }, token);
   }
 
-  _postMessageToParent(message) {
-    return this.fetchToken()
-      .then(token => this.parentSourceWindow.postMessage(
-        Object.assign({token}, message), this.parentOrigin));
+  _postMessageToParent(message, token) {
+    if (token) {
+      this.parentSourceWindow.postMessage(Object.assign({token}, message), this.parentOrigin);
+    } else {
+      return this.fetchToken()
+        .then(token => this.parentSourceWindow.postMessage(Object.assign({token}, message), this.parentOrigin));
+    }
   }
 
   fetchToken() {

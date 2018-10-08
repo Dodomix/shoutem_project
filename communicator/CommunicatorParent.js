@@ -41,6 +41,12 @@ export default class CommunicatorParent {
     window.addEventListener('message', this._messageEventHandler.bind(this));
   }
 
+  notifyStateUpdated() {
+    this._executeForEachComponent(this.components, component => this._postMessageToIframeComponent(component, {
+      type: STATE_UPDATED
+    }));
+  }
+
   _messageEventHandler(e) {
     if (e.source === window) { // react messages
       return;

@@ -1,11 +1,19 @@
 import Chess from 'react-chess';
-import {HANDLE_DRAG_PIECE, HANDLE_MOVE_PIECE, SET_BOARD_STATE} from '../actions/actionConstants';
+import {
+  HANDLE_DRAG_PIECE,
+  HANDLE_MOVE_PIECE,
+  SET_BOARD_STATE,
+  TOGGLE_SENT_TOKEN,
+  TOGGLE_ALLOW_MOVE_OTHER_PLAYER
+} from '../actions/actionConstants';
 
 const initialState = {
   currentPlayer: 'white',
   pieces: Chess.getDefaultLineup(),
   piece: null,
-  gameStatus: null
+  gameStatus: null,
+  sendOtherToken: false,
+  allowMoveOtherPlayer: false
 };
 
 const formatMove = action => {
@@ -39,9 +47,17 @@ const board = (state = initialState, action) => {
         pieces: [].concat(action.state.board.white, action.state.board.black),
         currentPlayer: action.state.currentPlayer,
         gameStatus: action.state.gameStatus,
-        whitePlayerTitle: action.state.whitePlayerTitle,
-        blackPlayerTitle: action.state.blackPlayerTitle,
+        isWhitePlayer: action.state.isWhitePlayer,
+        isBlackPlayer: action.state.isBlackPlayer,
         piece: null
+      });
+    case TOGGLE_SENT_TOKEN:
+      return Object.assign({}, state, {
+        sendOtherToken: !state.sendOtherToken
+      });
+    case TOGGLE_ALLOW_MOVE_OTHER_PLAYER:
+      return Object.assign({}, state, {
+        allowMoveOtherPlayer: !state.allowMoveOtherPlayer
       });
     default:
       return state;
