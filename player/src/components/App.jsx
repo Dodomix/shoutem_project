@@ -88,6 +88,12 @@ class App extends Component {
     return piece && piece.name === piece.name.toUpperCase() ? 'white' : 'black';
   };
 
+  _sendFakeMessageType = () => {
+    this.props.communicator._postMessageToParent({
+      type: 'FAKE_TYPE'
+    });
+  };
+
   render() {
     return (
       <div className="App">
@@ -103,12 +109,19 @@ class App extends Component {
         {
           this.props.isWhitePlayer &&
           <div>
-            <FormControlLabel control={
-              <Checkbox onChange={this.props.toggleSentToken} color="primary"/>
-            } label="Send other token" />
-            <FormControlLabel control={
-              <Checkbox onChange={this.props.toggleAllowMoveOtherPlayer} color="primary"/>
-            } label="Allow move other player"/>
+            <div>
+              <FormControlLabel control={
+                <Checkbox onChange={this.props.toggleAllowMoveOtherPlayer} color="primary"/>
+              } label="Allow move other player"/>
+            </div>
+            <div>
+              <FormControlLabel control={
+                <Checkbox onChange={this.props.toggleSentToken} color="primary"/>
+              } label="Send other token" />
+            </div>
+            <div>
+              <Button onClick={this._sendFakeMessageType.bind(this)}>Send fake message type</Button>
+            </div>
           </div>
         }
       </div>
