@@ -35,7 +35,10 @@ const appData = {
 };
 
 app.get('/api/token', (req, res) => {
-  const signed = jwt.sign(appData[req.get('origin')], cert, {algorithm: 'RS512'});
+  const signed = jwt.sign(appData[req.get('origin')], cert, {
+    algorithm: 'RS512',
+    expiresIn: 5 * 60 // 5 minutes
+  });
   res.send({
     token: signed
   });

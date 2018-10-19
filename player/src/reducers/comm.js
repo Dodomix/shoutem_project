@@ -1,4 +1,4 @@
-import {SET_COMMUNICATOR} from "../actions/actionConstants";
+import {SET_COMMUNICATOR} from '../actions/actionConstants';
 
 const initialState = {};
 

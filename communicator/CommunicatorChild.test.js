@@ -6,14 +6,15 @@ import {
   REQUEST_FAILED,
   REQUEST_SUCCEEDED,
   STATE_UPDATED,
+  TOKEN_EXPIRED,
   UPDATE_STATE
-} from "./responseTypeConstants";
+} from './responseTypeConstants';
 
 let communicatorChild;
 
 beforeEach(() => communicatorChild = new CommunicatorChild());
 
-test('_postMessageToParent fetches the token and posts the message including the token to the parent component', done => {
+test('_postMessageToParent fetches the token if it does not exist and posts the message including the token to the parent component', done => {
   communicatorChild.fetchToken = jest.fn(() => Promise.resolve('token1'));
   communicatorChild.parentSourceWindow = {
     postMessage: (message, origin) => {
@@ -29,6 +30,41 @@ test('_postMessageToParent fetches the token and posts the message including the
   communicatorChild._postMessageToParent({
     is: 'message'
   });
+});
+
+test('_postMessageToParent uses the existing token if it exists and posts the message including the token to the parent component', done => {
+  communicatorChild.token = 'token1';
+  communicatorChild.parentSourceWindow = {
+    postMessage: (message, origin) => {
+      expect(message).toEqual({
+        is: 'message',
+        token: 'token1'
+      });
+      expect(origin).toEqual('http://localhost:3000');
+      done();
+    }
+  };
+
+  communicatorChild._postMessageToParent({
+    is: 'message'
+  });
+});
+
+test('_postMessageWithTokenToParent posts the message including the token to the parent component', done => {
+  communicatorChild.parentSourceWindow = {
+    postMessage: (message, origin) => {
+      expect(message).toEqual({
+        is: 'message',
+        token: 'token1'
+      });
+      expect(origin).toEqual('http://localhost:3000');
+      done();
+    }
+  };
+
+  communicatorChild._postMessageWithTokenToParent({
+    is: 'message'
+  }, 'token1');
 });
 
 test('fetchToken makes the correct api call', done => {
@@ -58,7 +94,7 @@ test('sendUpdateState sends the update state message to the parent', () => {
     stateUpdate: {
       is: 'stateUpdate'
     }
-  })
+  });
 });
 
 test('Calls the error handler if a message is received from invalid origin', () => {
@@ -207,6 +243,34 @@ test('On state updated message, calls the correct handler and requests state dat
   }, 1);
 });
 
+test('Calls the token expired handler and resends the last message if message type is token expired', done => {
+  communicatorChild.fetchToken = jest.fn(() => Promise.resolve('token1'));
+  communicatorChild.handlers.onTokenExpired = jest.fn();
+  const parentSource = {
+    is: 'parentSource',
+    postMessage: (message, origin) => {
+      expect(communicatorChild.handlers.onTokenExpired.mock.calls.length).toEqual(1);
+      expect(message).toEqual({
+        is: 'message',
+        token: 'token1'
+      });
+      expect(origin).toEqual('http://localhost:3000');
+      done();
+    }
+  };
+  communicatorChild.parentSourceWindow = parentSource;
+  communicatorChild.lastMessage = {
+    is: 'message'
+  };
+
+  communicatorChild._messageEventHandler({
+    origin: 'http://localhost:3000',
+    source: parentSource,
+    data: {
+      type: TOKEN_EXPIRED
+    }
+  });
+});
 
 test('Calls the unknown message handler if receives an unknown message type', () => {
   communicatorChild.handlers.onUnknownMessage = jest.fn();

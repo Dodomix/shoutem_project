@@ -1,6 +1,6 @@
 {
   "name": "communicator",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "files": [
     "communicator-child.js",
@@ -14,6 +14,16 @@
     "react-test-renderer": "^16.5.2"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint *.js"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^8.3.0",
+    "eslint": "^5.7.0"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "./public.pem": "./dummy.js"
+    }
   }
 }

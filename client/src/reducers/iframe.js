@@ -18,13 +18,14 @@ const iframe = (state = initialState, action) => {
       return Object.assign({}, state, {
         communicator: action.communicator
       });
-    case ASSIGN_IFRAME:
+    case ASSIGN_IFRAME: {
       const assignUpdate = {};
       Object.assign(assignUpdate, state);
       Object.assign(assignUpdate.components[action.iframeName], {
         iframe: action.ref
       });
       return Object.assign({}, state, assignUpdate);
+    }
     default:
       return state;
   }

@@ -66,10 +66,11 @@ const initialState = {
 
 const chessState = (state = initialState, action) => {
   switch (action.type) {
-    case UPDATE_CHESS_STATE:
+    case UPDATE_CHESS_STATE: {
       const updatedState = Object.assign({}, state, action.stateUpdate);
       updatedState.actionValid = executeActions(updatedState);
       return updatedState;
+    }
     case RESET:
       chess.reset();
       return Object.assign({}, state, {

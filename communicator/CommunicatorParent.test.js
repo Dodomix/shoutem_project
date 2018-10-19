@@ -6,8 +6,9 @@ import {
   REQUEST_FAILED,
   REQUEST_SUCCEEDED,
   STATE_UPDATED,
+  TOKEN_EXPIRED,
   UPDATE_STATE
-} from "./responseTypeConstants";
+} from './responseTypeConstants';
 
 let communicatorParent;
 
@@ -44,7 +45,7 @@ test('_executeForEachComponent executes given action for each component', () => 
       key: 'c3',
       value: 30
     }
-  })
+  });
 });
 
 test('_postMessageToIframeComponent posts message to the given iframe component', done => {
@@ -69,6 +70,9 @@ test('_postMessageToIframeComponent posts message to the given iframe component'
 });
 
 test('After loading, each component receives the register message', done => {
+  window.fetch = () => Promise.resolve({
+    text: () => Promise.resolve('')
+  });
   const components = {
     c1: {
       iframe: {
@@ -86,7 +90,7 @@ test('After loading, each component receives the register message', done => {
     },
     c2: {
       iframe: {
-        addEventListener: (eventName, action) => {
+        addEventListener: (eventName) => {
           expect(eventName).toEqual('load');
         }
       }
@@ -96,10 +100,125 @@ test('After loading, each component receives the register message', done => {
   communicatorParent.initialize(components);
 });
 
+test('If token origin does not match, sends request failed message', done => {
+  communicatorParent._verifyToken = token => {
+    expect(token).toEqual('token');
+    return {
+      origin: 'http://localhost:3002'
+    };
+  };
+  const contentWindow = {
+    postMessage: message => {
+      expect(message.type).toEqual(REQUEST_FAILED);
+      done();
+    }
+  };
+  communicatorParent.components = {
+    c1: {
+      origin: 'http://localhost:3001',
+      iframe: {
+        contentWindow: contentWindow
+      }
+    },
+    c2: {
+      origin: 'http://localhost:3002'
+    }
+  };
+
+  communicatorParent._messageEventHandler({
+    origin: 'http://localhost:3001',
+    source: contentWindow,
+    data: {
+      type: DATA_REQUEST,
+      token: 'token'
+    }
+  });
+});
+
+test('If token fails to get verified, sends request failed message', done => {
+  communicatorParent._verifyToken = token => {
+    expect(token).toEqual('token');
+    throw {};
+  };
+  const contentWindow = {
+    postMessage: message => {
+      expect(message.type).toEqual(REQUEST_FAILED);
+      done();
+    }
+  };
+  communicatorParent.components = {
+    c1: {
+      origin: 'http://localhost:3001',
+      iframe: {
+        contentWindow: contentWindow
+      }
+    },
+    c2: {
+      origin: 'http://localhost:3002'
+    }
+  };
+
+  communicatorParent._messageEventHandler({
+    origin: 'http://localhost:3001',
+    source: contentWindow,
+    data: {
+      type: DATA_REQUEST,
+      token: 'token'
+    }
+  });
+});
+
+test('If token expired, sends token expired message', done => {
+  communicatorParent._verifyToken = token => {
+    expect(token).toEqual('token');
+    throw {
+      name: 'TokenExpiredError'
+    };
+  };
+  const contentWindow = {
+    postMessage: message => {
+      expect(message.type).toEqual(TOKEN_EXPIRED);
+      done();
+    }
+  };
+  communicatorParent.components = {
+    c1: {
+      origin: 'http://localhost:3001',
+      iframe: {
+        contentWindow: contentWindow
+      }
+    },
+    c2: {
+      origin: 'http://localhost:3002'
+    }
+  };
+
+  communicatorParent._messageEventHandler({
+    origin: 'http://localhost:3001',
+    source: contentWindow,
+    data: {
+      type: DATA_REQUEST,
+      token: 'token'
+    }
+  });
+});
+
 test('If receives a data request, fetches data and sends a data response', done => {
-  communicatorParent.handlers.getReadableState = jest.fn(() => ({
-    is: 'state'
-  }));
+  communicatorParent._verifyToken = token => {
+    expect(token).toEqual('token');
+    return {
+      origin: 'http://localhost:3001',
+      permissions: {
+        read: ['read']
+      }
+    };
+  };
+  communicatorParent.handlers.getReadableState = permissions => {
+    expect(permissions).toEqual(['read']);
+    return {
+      is: 'state'
+    };
+  };
   const contentWindow = {
     postMessage: message => {
       expect(message.type).toEqual(DATA_RESPONSE);
@@ -109,49 +228,35 @@ test('If receives a data request, fetches data and sends a data response', done 
       done();
     }
   };
-  const components = {
+  communicatorParent.components = {
     c1: {
       origin: 'http://localhost:3001',
       iframe: {
-        addEventListener: (eventName, action) => {
-          expect(eventName).toEqual('load');
-        },
         contentWindow: contentWindow
       }
     },
     c2: {
-      origin: 'http://localhost:3002',
-      iframe: {
-        addEventListener: (eventName, action) => {
-          expect(eventName).toEqual('load');
-        }
-      }
+      origin: 'http://localhost:3002'
     }
   };
-  communicatorParent.initialize(components);
 
   communicatorParent._messageEventHandler({
     origin: 'http://localhost:3001',
     source: contentWindow,
     data: {
-      type: DATA_REQUEST
+      type: DATA_REQUEST,
+      token: 'token'
     }
   });
 });
 
 test('Calls the error handler if a message is received from invalid origin', () => {
   communicatorParent.handlers.onInvalidOrigin = jest.fn();
-  const components = {
+  communicatorParent.components = {
     c1: {
-      origin: 'http://localhost:3001',
-      iframe: {
-        addEventListener: (eventName, action) => {
-          expect(eventName).toEqual('load');
-        }
-      }
+      origin: 'http://localhost:3001'
     }
   };
-  communicatorParent.initialize(components);
 
   communicatorParent._messageEventHandler({
     origin: 'http://localhost:3002'
@@ -168,18 +273,14 @@ test('Calls the error handler if a message is received from a source which does 
   const fakeContentWindow = {
     is: 'fakeContentWindow'
   };
-  const components = {
+  communicatorParent.components = {
     c1: {
       origin: 'http://localhost:3001',
       iframe: {
-        addEventListener: (eventName, action) => {
-          expect(eventName).toEqual('load');
-        },
         contentWindow: contentWindow
       }
     }
   };
-  communicatorParent.initialize(components);
 
   communicatorParent._messageEventHandler({
     origin: 'http://localhost:3001',
@@ -192,6 +293,15 @@ test('Calls the error handler if a message is received from a source which does 
 });
 
 test('If receives a data request, fetches data and sends a data response', done => {
+  communicatorParent._verifyToken = token => {
+    expect(token).toEqual('token');
+    return {
+      origin: 'http://localhost:3001',
+      permissions: {
+        read: ['read']
+      }
+    };
+  };
   communicatorParent.handlers.getReadableState = jest.fn(() => ({
     is: 'state'
   }));
@@ -204,90 +314,45 @@ test('If receives a data request, fetches data and sends a data response', done 
       done();
     }
   };
-  const components = {
+  communicatorParent.components = {
     c1: {
       origin: 'http://localhost:3001',
       iframe: {
-        addEventListener: (eventName, action) => {
-          expect(eventName).toEqual('load');
-        },
         contentWindow: contentWindow
       }
     },
     c2: {
-      origin: 'http://localhost:3002',
-      iframe: {
-        addEventListener: (eventName, action) => {
-          expect(eventName).toEqual('load');
-        }
-      }
+      origin: 'http://localhost:3002'
     }
   };
-  communicatorParent.initialize(components);
 
   communicatorParent._messageEventHandler({
     origin: 'http://localhost:3001',
     source: contentWindow,
     data: {
-      type: DATA_REQUEST
-    }
-  });
-});
-
-test('If receives a data request, and it fails, sends a request failed message', done => {
-  communicatorParent.handlers.getReadableState = jest.fn(() => {
-    throw new Error('Request refused');
-  });
-  const contentWindow = {
-    postMessage: message => {
-      expect(message).toEqual({
-        type: REQUEST_FAILED,
-        reason: 'Request refused'
-      });
-      done();
-    }
-  };
-  const components = {
-    c1: {
-      origin: 'http://localhost:3001',
-      iframe: {
-        addEventListener: (eventName, action) => {
-          expect(eventName).toEqual('load');
-        },
-        contentWindow: contentWindow
-      }
-    },
-    c2: {
-      origin: 'http://localhost:3002',
-      iframe: {
-        addEventListener: (eventName, action) => {
-          expect(eventName).toEqual('load');
-        }
-      }
-    }
-  };
-  communicatorParent.initialize(components);
-
-  communicatorParent._messageEventHandler({
-    origin: 'http://localhost:3001',
-    source: contentWindow,
-    data: {
-      type: DATA_REQUEST
+      type: DATA_REQUEST,
+      token: 'token'
     }
   });
 });
 
 test('If receives a request to update state, updates it and sends a request successful response and update state response', done => {
-  communicatorParent.handlers.updateState = jest.fn(data => {
-    expect(data).toEqual({
-      token: 'token1',
-      stateUpdate: {
-        a: {
-          b: 3
-        }
-      },
-      origin: 'http://localhost:3001'
+  communicatorParent._verifyToken = token => {
+    expect(token).toEqual('token1');
+    return {
+      origin: 'http://localhost:3001',
+      permissions: {
+        write: ['write']
+      }
+    };
+  };
+  communicatorParent.handlers.updateState = jest.fn((stateUpdate, permissions) => {
+    expect(stateUpdate).toEqual({
+      a: {
+        b: 3
+      }
     });
+    expect(permissions).toEqual(['write']);
     return Promise.resolve();
   });
   communicatorParent.handlers.onUpdateStateRequest = jest.fn();
@@ -297,27 +362,20 @@ test('If receives a request to update state, updates it and sends a request succ
   const contentWindow2 = {
     postMessage: jest.fn()
   };
-  const components = {
+  communicatorParent.components = {
     c1: {
       origin: 'http://localhost:3001',
       iframe: {
-        addEventListener: (eventName, action) => {
-          expect(eventName).toEqual('load');
-        },
         contentWindow: contentWindow1
       }
     },
     c2: {
       origin: 'http://localhost:3002',
       iframe: {
-        addEventListener: (eventName, action) => {
-          expect(eventName).toEqual('load');
-        },
         contentWindow: contentWindow2
       }
     }
   };
-  communicatorParent.initialize(components);
 
   communicatorParent._messageEventHandler({
     origin: 'http://localhost:3001',
@@ -350,32 +408,32 @@ test('If receives a request to update state, updates it and sends a request succ
 });
 
 test('If receives a request to update state and update fails, sends a message about failed request', done => {
+  communicatorParent._verifyToken = token => {
+    expect(token).toEqual('token1');
+    return {
+      origin: 'http://localhost:3001',
+      permissions: {
+        write: ['write']
+      }
+    };
+  };
   communicatorParent.handlers.updateState = jest.fn(() => Promise.reject({
     message: 'Request not valid'
   }));
   const contentWindow1 = {
     postMessage: jest.fn()
   };
-  const components = {
+  communicatorParent.components = {
     c1: {
       origin: 'http://localhost:3001',
       iframe: {
-        addEventListener: (eventName, action) => {
-          expect(eventName).toEqual('load');
-        },
         contentWindow: contentWindow1
       }
     },
     c2: {
-      origin: 'http://localhost:3002',
-      iframe: {
-        addEventListener: (eventName, action) => {
-          expect(eventName).toEqual('load');
-        }
-      }
+      origin: 'http://localhost:3002'
     }
   };
-  communicatorParent.initialize(components);
 
   communicatorParent._messageEventHandler({
     origin: 'http://localhost:3001',
@@ -401,30 +459,27 @@ test('If receives a request to update state and update fails, sends a message ab
 });
 
 test('Calls the unknown message handler if receives an unknown message type', () => {
+  communicatorParent._verifyToken = token => {
+    expect(token).toEqual('token1');
+    return {
+      origin: 'http://localhost:3001'
+    };
+  };
   communicatorParent.handlers.onUnknownMessage = jest.fn();
   const contentWindow1 = {
     postMessage: jest.fn()
   };
-  const components = {
+  communicatorParent.components = {
     c1: {
       origin: 'http://localhost:3001',
       iframe: {
-        addEventListener: (eventName, action) => {
-          expect(eventName).toEqual('load');
-        },
         contentWindow: contentWindow1
       }
     },
     c2: {
-      origin: 'http://localhost:3002',
-      iframe: {
-        addEventListener: (eventName, action) => {
-          expect(eventName).toEqual('load');
-        }
-      }
+      origin: 'http://localhost:3002'
     }
   };
-  communicatorParent.initialize(components);
 
   communicatorParent._messageEventHandler({
     origin: 'http://localhost:3001',

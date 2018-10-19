@@ -5,8 +5,11 @@ import {
   REQUEST_FAILED,
   REQUEST_SUCCEEDED,
   STATE_UPDATED,
+  TOKEN_EXPIRED,
   UPDATE_STATE
-} from "./responseTypeConstants";
+} from './responseTypeConstants';
+import * as jwt from 'jsonwebtoken';
+import pubFile from './public.pem';
 
 const noop = () => {};
 const defaultHandlers = {
@@ -23,12 +26,14 @@ export default class CommunicatorParent {
     this.handlers = Object.assign({}, defaultHandlers, handlers);
   }
 
-  initialize(components) {
+  async initialize(components) {
     if (!window) {
-      throw new Error("Browser window is required to initialize communicator");
+      throw new Error('Browser window is required to initialize communicator');
     }
 
     this.components = components;
+
+    this.pub = await (await fetch(pubFile)).text();
 
     this._executeForEachComponent(this.components, component => {
       component.iframe.addEventListener('load', () => {
@@ -57,24 +62,35 @@ export default class CommunicatorParent {
     } else if (component.iframe.contentWindow !== e.source) {
       this.handlers.onInvalidSource(e.source);
     } else {
-      if (e.data.type === DATA_REQUEST) {
-        try {
+      let tokenData;
+      try {
+        tokenData = this._verifyToken(e.data.token);
+      } catch (ex) {
+        if (ex.name === 'TokenExpiredError') {
           this._postMessageToIframeComponent(component, {
-            type: DATA_RESPONSE,
-            state: this.handlers.getReadableState(e.origin, e.data.token)
+            type: TOKEN_EXPIRED
           });
-        } catch (err) {
+        } else {
           this._postMessageToIframeComponent(component, {
             type: REQUEST_FAILED,
-            reason: err.message
+            reason: 'Cannot verify token'
           });
         }
+        return;
+      }
+      if (e.origin !== tokenData.origin) {
+        return this._postMessageToIframeComponent(component, {
+          type: REQUEST_FAILED,
+          reason: 'Invalid origin'
+        });
+      }
+      if (e.data.type === DATA_REQUEST) {
+        this._postMessageToIframeComponent(component, {
+          type: DATA_RESPONSE,
+          state: this.handlers.getReadableState(tokenData.permissions.read)
+        });
       } else if (e.data.type === UPDATE_STATE) {
-        this.handlers.updateState({
-          token: e.data.token,
-          stateUpdate: e.data.stateUpdate,
-          origin: e.origin
-        }).then(() => {
+        this.handlers.updateState(e.data.stateUpdate, tokenData.permissions.write).then(() => {
           this._postMessageToIframeComponent(component, {
             type: REQUEST_SUCCEEDED
           });
@@ -100,4 +116,8 @@ export default class CommunicatorParent {
   _postMessageToIframeComponent(component, message) {
     return component.iframe.contentWindow.postMessage(message, component.origin);
   }
-};
+
+  _verifyToken(token) {
+    return jwt.verify(token, this.pub, {algorithm: 'RS512'});
+  }
+}

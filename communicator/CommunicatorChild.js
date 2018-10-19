@@ -5,11 +5,11 @@ import {
   REQUEST_FAILED,
   REQUEST_SUCCEEDED,
   STATE_UPDATED,
+  TOKEN_EXPIRED,
   UPDATE_STATE
-} from "./responseTypeConstants";
+} from './responseTypeConstants';
 
-const noop = () => {
-};
+const noop = () => {};
 const defaultHandlers = {
   onInvalidOrigin: noop,
   onInvalidSource: noop,
@@ -18,7 +18,8 @@ const defaultHandlers = {
   onRequestFailed: noop,
   onStateUpdated: noop,
   onFetchTokenFailed: noop,
-  onUnknownMessage: noop
+  onUnknownMessage: noop,
+  onTokenExpired: noop
 };
 
 export default class CommunicatorChild {
@@ -30,7 +31,7 @@ export default class CommunicatorChild {
 
   initialize() {
     if (!window) {
-      throw "Browser window is required to initialize communicator";
+      throw 'Browser window is required to initialize communicator';
     }
 
     window.addEventListener('message', this._messageEventHandler.bind(this));
@@ -67,6 +68,11 @@ export default class CommunicatorChild {
               type: DATA_REQUEST
             });
             break;
+          case TOKEN_EXPIRED:
+            this.handlers.onTokenExpired();
+            this.token = null;
+            this._postMessageToParent(this.lastMessage); // retry last call
+            break;
           default:
             this.handlers.onUnknownMessage(e.data.type);
         }
@@ -74,20 +80,27 @@ export default class CommunicatorChild {
     }
   }
 
-  sendUpdateState(stateUpdate, token) {
+  sendUpdateState(stateUpdate) {
     this._postMessageToParent({
       type: UPDATE_STATE,
       stateUpdate: stateUpdate
-    }, token);
+    });
   }
 
-  _postMessageToParent(message, token) {
-    if (token) {
-      this.parentSourceWindow.postMessage(Object.assign({token}, message), this.parentOrigin);
+  _postMessageToParent(message) {
+    if (!this.token) {
+      this.fetchToken().then(token => {
+        this.token = token;
+        this._postMessageWithTokenToParent(message, this.token);
+      });
     } else {
-      return this.fetchToken()
-        .then(token => this.parentSourceWindow.postMessage(Object.assign({token}, message), this.parentOrigin));
+      this._postMessageWithTokenToParent(message, this.token);
     }
+  }
+
+  _postMessageWithTokenToParent(message, token) {
+    this.lastMessage = message;
+    return this.parentSourceWindow.postMessage(Object.assign({token}, message), this.parentOrigin);
   }
 
   fetchToken() {
@@ -96,7 +109,7 @@ export default class CommunicatorChild {
     }).catch(err => {
       this.handlers.onFetchTokenFailed(err.message.substr(4));
     });
-  };
+  }
 
   async _callApi(path, options) {
     const response = await fetch(`${this.server}${path}`, options);
@@ -105,5 +118,5 @@ export default class CommunicatorChild {
     if (response.status !== 200) throw Error(body.message);
 
     return body;
-  };
+  }
 }

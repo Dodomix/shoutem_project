@@ -16,12 +16,10 @@ const initialState = {
   allowMoveOtherPlayer: false
 };
 
-const formatMove = action => {
-  return {
-    from: action.start,
-    to: action.end
-  }
-};
+const formatMove = action => ({
+  from: action.start,
+  to: action.end
+});
 
 const computeMovedPiece = (state, action) =>
   action.dragAllowed && // if drag is not allowed, keep old piece

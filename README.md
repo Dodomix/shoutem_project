@@ -14,6 +14,7 @@ expected format for `jsonwebtoken` so to remove it and create the correct public
 
     rm private.pem.pub
     openssl rsa -in private.pem -pubout -outform PEM -out public.pem
+    mv public.pem communicator/
 
 
 After this, you can start all apps by running `yarn dev`. This will start two servers 
