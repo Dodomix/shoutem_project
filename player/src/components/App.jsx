@@ -20,7 +20,7 @@ import CommunicatorChild from 'communicator/CommunicatorChild';
 
 class App extends Component {
   componentDidMount() {
-    const communicator = new CommunicatorChild({
+    const communicator = new CommunicatorChild('http://localhost:5001', 'http://localhost:3000', {
       onInvalidOrigin: origin => alert('Component received message with invalid origin: ' + origin),
       onInvalidSource: () => alert('Component received message with invalid source.'),
       onReceiveState: this.props.setBoardState,

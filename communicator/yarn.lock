@@ -305,15 +305,6 @@ babel-helper-builder-binary-assignment-operator-visitor@^6.24.1:
     babel-runtime "^6.22.0"
     babel-types "^6.24.1"
 
-babel-helper-builder-react-jsx@^6.24.1:
-  version "6.26.0"
-  resolved "https://registry.yarnpkg.com/babel-helper-builder-react-jsx/-/babel-helper-builder-react-jsx-6.26.0.tgz#39ff8313b75c8b65dceff1f31d383e0ff2a408a0"
-  integrity sha1-Of+DE7dci2Xc7/HzHTg+D/KkCKA=
-  dependencies:
-    babel-runtime "^6.26.0"
-    babel-types "^6.26.0"
-    esutils "^2.0.2"
-
 babel-helper-call-delegate@^6.24.1:
   version "6.24.1"
   resolved "https://registry.yarnpkg.com/babel-helper-call-delegate/-/babel-helper-call-delegate-6.24.1.tgz#ece6aacddc76e41c3461f88bfc575bd0daa2df8d"
@@ -464,16 +455,6 @@ babel-plugin-syntax-exponentiation-operator@^6.8.0:
   version "6.13.0"
   resolved "http://registry.npmjs.org/babel-plugin-syntax-exponentiation-operator/-/babel-plugin-syntax-exponentiation-operator-6.13.0.tgz#9ee7e8337290da95288201a6a57f4170317830de"
   integrity sha1-nufoM3KQ2pUoggGmpX9BcDF4MN4=
-
-babel-plugin-syntax-flow@^6.18.0:
-  version "6.18.0"
-  resolved "http://registry.npmjs.org/babel-plugin-syntax-flow/-/babel-plugin-syntax-flow-6.18.0.tgz#4c3ab20a2af26aa20cd25995c398c4eb70310c8d"
-  integrity sha1-TDqyCiryaqIM0lmVw5jE63AxDI0=
-
-babel-plugin-syntax-jsx@^6.3.13, babel-plugin-syntax-jsx@^6.8.0:
-  version "6.18.0"
-  resolved "http://registry.npmjs.org/babel-plugin-syntax-jsx/-/babel-plugin-syntax-jsx-6.18.0.tgz#0af32a9a6e13ca7a3fd5069e62d7b0f58d0d8946"
-  integrity sha1-CvMqmm4Tyno/1QaeYtew9Y0NiUY=
 
 babel-plugin-syntax-object-rest-spread@^6.13.0:
   version "6.13.0"
@@ -693,46 +674,6 @@ babel-plugin-transform-exponentiation-operator@^6.22.0:
     babel-plugin-syntax-exponentiation-operator "^6.8.0"
     babel-runtime "^6.22.0"
 
-babel-plugin-transform-flow-strip-types@^6.22.0:
-  version "6.22.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-transform-flow-strip-types/-/babel-plugin-transform-flow-strip-types-6.22.0.tgz#84cb672935d43714fdc32bce84568d87441cf7cf"
-  integrity sha1-hMtnKTXUNxT9wyvOhFaNh0Qc988=
-  dependencies:
-    babel-plugin-syntax-flow "^6.18.0"
-    babel-runtime "^6.22.0"
-
-babel-plugin-transform-react-display-name@^6.23.0:
-  version "6.25.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-transform-react-display-name/-/babel-plugin-transform-react-display-name-6.25.0.tgz#67e2bf1f1e9c93ab08db96792e05392bf2cc28d1"
-  integrity sha1-Z+K/Hx6ck6sI25Z5LgU5K/LMKNE=
-  dependencies:
-    babel-runtime "^6.22.0"
-
-babel-plugin-transform-react-jsx-self@^6.22.0:
-  version "6.22.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-transform-react-jsx-self/-/babel-plugin-transform-react-jsx-self-6.22.0.tgz#df6d80a9da2612a121e6ddd7558bcbecf06e636e"
-  integrity sha1-322AqdomEqEh5t3XVYvL7PBuY24=
-  dependencies:
-    babel-plugin-syntax-jsx "^6.8.0"
-    babel-runtime "^6.22.0"
-
-babel-plugin-transform-react-jsx-source@^6.22.0:
-  version "6.22.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-transform-react-jsx-source/-/babel-plugin-transform-react-jsx-source-6.22.0.tgz#66ac12153f5cd2d17b3c19268f4bf0197f44ecd6"
-  integrity sha1-ZqwSFT9c0tF7PBkmj0vwGX9E7NY=
-  dependencies:
-    babel-plugin-syntax-jsx "^6.8.0"
-    babel-runtime "^6.22.0"
-
-babel-plugin-transform-react-jsx@^6.24.1:
-  version "6.24.1"
-  resolved "https://registry.yarnpkg.com/babel-plugin-transform-react-jsx/-/babel-plugin-transform-react-jsx-6.24.1.tgz#840a028e7df460dfc3a2d29f0c0d91f6376e66a3"
-  integrity sha1-hAoCjn30YN/DotKfDA2R9jduZqM=
-  dependencies:
-    babel-helper-builder-react-jsx "^6.24.1"
-    babel-plugin-syntax-jsx "^6.8.0"
-    babel-runtime "^6.22.0"
-
 babel-plugin-transform-regenerator@^6.22.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-plugin-transform-regenerator/-/babel-plugin-transform-regenerator-6.26.0.tgz#e0703696fbde27f0a3efcacf8b4dca2f7b3a8f2f"
@@ -784,13 +725,6 @@ babel-preset-env@^1.7.0:
     invariant "^2.2.2"
     semver "^5.3.0"
 
-babel-preset-flow@^6.23.0:
-  version "6.23.0"
-  resolved "https://registry.yarnpkg.com/babel-preset-flow/-/babel-preset-flow-6.23.0.tgz#e71218887085ae9a24b5be4169affb599816c49d"
-  integrity sha1-5xIYiHCFrpoktb5Baa/7WZgWxJ0=
-  dependencies:
-    babel-plugin-transform-flow-strip-types "^6.22.0"
-
 babel-preset-jest@^23.2.0:
   version "23.2.0"
   resolved "https://registry.yarnpkg.com/babel-preset-jest/-/babel-preset-jest-23.2.0.tgz#8ec7a03a138f001a1a8fb1e8113652bf1a55da46"
@@ -798,18 +732,6 @@ babel-preset-jest@^23.2.0:
   dependencies:
     babel-plugin-jest-hoist "^23.2.0"
     babel-plugin-syntax-object-rest-spread "^6.13.0"
-
-babel-preset-react@^6.24.1:
-  version "6.24.1"
-  resolved "https://registry.yarnpkg.com/babel-preset-react/-/babel-preset-react-6.24.1.tgz#ba69dfaea45fc3ec639b6a4ecea6e17702c91380"
-  integrity sha1-umnfrqRfw+xjm2pOzqbhdwLJE4A=
-  dependencies:
-    babel-plugin-syntax-jsx "^6.3.13"
-    babel-plugin-transform-react-display-name "^6.23.0"
-    babel-plugin-transform-react-jsx "^6.24.1"
-    babel-plugin-transform-react-jsx-self "^6.22.0"
-    babel-plugin-transform-react-jsx-source "^6.22.0"
-    babel-preset-flow "^6.23.0"
 
 babel-register@^6.26.0:
   version "6.26.0"
@@ -3026,7 +2948,7 @@ lodash@^4.13.1, lodash@^4.17.10, lodash@^4.17.4, lodash@^4.17.5:
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
   integrity sha512-cQKh8igo5QUhZ7lg38DYWAxMvjSAKG0A8wGSVimP07SIUEK2UO+arSRKbRZWtelMtN5V0Hkwh5ryOto/SshYIg==
 
-loose-envify@^1.0.0, loose-envify@^1.3.1:
+loose-envify@^1.0.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/loose-envify/-/loose-envify-1.4.0.tgz#71ee51fa7be4caec1a63839f7e682d8132d30caf"
   integrity sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==
@@ -3348,7 +3270,7 @@ oauth-sign@~0.9.0:
   resolved "https://registry.yarnpkg.com/oauth-sign/-/oauth-sign-0.9.0.tgz#47a7b016baa68b5fa0ecf3dee08a85c679ac6455"
   integrity sha512-fexhUFFPTGV8ybAtSIGbV6gOkSv8UtRbDBnAyLQw4QPKkgNlsH2ByPGtMUqdWkos6YCRmAqViwgZrJc/mRDzZQ==
 
-object-assign@^4.0.1, object-assign@^4.1.0, object-assign@^4.1.1:
+object-assign@^4.0.1, object-assign@^4.1.0:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/object-assign/-/object-assign-4.1.1.tgz#2109adc7965887cfc05cbbd442cac8bfbb360863"
   integrity sha1-IQmtx5ZYh8/AXLvUQsrIv7s2CGM=
@@ -3635,14 +3557,6 @@ prompts@^0.1.9:
     kleur "^2.0.1"
     sisteransi "^0.1.1"
 
-prop-types@^15.6.2:
-  version "15.6.2"
-  resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.6.2.tgz#05d5ca77b4453e985d60fc7ff8c859094a497102"
-  integrity sha512-3pboPvLiWD7dkI3qf3KbUe6hKFKa52w+AE0VCqECtf+QHAKgOL37tTaNCnuX1nAAQ4ZhyP+kYVKf8rLmJ/feDQ==
-  dependencies:
-    loose-envify "^1.3.1"
-    object-assign "^4.1.1"
-
 pseudomap@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/pseudomap/-/pseudomap-1.0.2.tgz#f052a28da70e618917ef0a8ac34c1ae5a68286b3"
@@ -3686,21 +3600,6 @@ rc@^1.2.7:
     ini "~1.3.0"
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
-
-react-is@^16.5.2:
-  version "16.5.2"
-  resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.5.2.tgz#e2a7b7c3f5d48062eb769fcb123505eb928722e3"
-  integrity sha512-hSl7E6l25GTjNEZATqZIuWOgSnpXb3kD0DVCujmg46K5zLxsbiKaaT6VO9slkSBDPZfYs30lwfJwbOFOnoEnKQ==
-
-react-test-renderer@^16.5.2:
-  version "16.5.2"
-  resolved "https://registry.yarnpkg.com/react-test-renderer/-/react-test-renderer-16.5.2.tgz#92e9d2c6f763b9821b2e0b22f994ee675068b5ae"
-  integrity sha512-AGbJYbCVx1J6jdUgI4s0hNp+9LxlgzKvXl0ROA3DHTrtjAr00Po1RhDZ/eAq2VC/ww8AHgpDXULh5V2rhEqqJg==
-  dependencies:
-    object-assign "^4.1.1"
-    prop-types "^15.6.2"
-    react-is "^16.5.2"
-    schedule "^0.5.0"
 
 read-pkg-up@^1.0.1:
   version "1.0.1"
@@ -3984,13 +3883,6 @@ sax@^1.2.4:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"
   integrity sha512-NqVDv9TpANUjFm0N8uM5GxL36UgKi9/atZw+x7YFnQ8ckwFGKrl4xX4yWtrey3UJm5nP1kUbnYgLopqWNSRhWw==
-
-schedule@^0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/schedule/-/schedule-0.5.0.tgz#c128fffa0b402488b08b55ae74bb9df55cc29cc8"
-  integrity sha512-HUcJicG5Ou8xfR//c2rPT0lPIRR09vVvN81T9fqfVgBmhERUbDEQoYKjpBxbueJnCPpSu2ujXzOnRQt6x9o/jw==
-  dependencies:
-    object-assign "^4.1.1"
 
 "semver@2 || 3 || 4 || 5", semver@^5.3.0, semver@^5.4.1, semver@^5.5.0:
   version "5.5.1"

@@ -13,16 +13,15 @@ import pubFile from './public.pem';
 
 const noop = () => {};
 const defaultHandlers = {
+  getReadableState: noop,
+  updateState: () => Promise.resolve(),
   onInvalidOrigin: noop,
   onInvalidSource: noop,
-  onUnknownMessage: noop,
-  getReadableState: noop,
-  updateState: () => Promise.resolve()
+  onUnknownMessage: noop
 };
 
 export default class CommunicatorParent {
   constructor(handlers) {
-    this.server = 'http://localhost:5000';
     this.handlers = Object.assign({}, defaultHandlers, handlers);
   }
 

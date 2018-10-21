@@ -12,7 +12,7 @@ import {
 
 let communicatorChild;
 
-beforeEach(() => communicatorChild = new CommunicatorChild());
+beforeEach(() => communicatorChild = new CommunicatorChild('http://localhost:5001', 'http://localhost:3000'));
 
 test('_postMessageToParent fetches the token if it does not exist and posts the message including the token to the parent component', done => {
   communicatorChild.fetchToken = jest.fn(() => Promise.resolve('token1'));

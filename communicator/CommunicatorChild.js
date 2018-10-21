@@ -23,9 +23,9 @@ const defaultHandlers = {
 };
 
 export default class CommunicatorChild {
-  constructor(handlers) {
-    this.server = 'http://localhost:5001';
-    this.parentOrigin = 'http://localhost:3000';
+  constructor(serverUrl, parentOrigin, handlers) {
+    this.server = serverUrl;
+    this.parentOrigin = parentOrigin;
     this.handlers = Object.assign({}, defaultHandlers, handlers);
   }
 
