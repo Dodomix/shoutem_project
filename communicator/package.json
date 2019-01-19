@@ -6,6 +6,10 @@
     "communicator-child.js",
     "communicator-parent.js"
   ],
+  "dependencies": {
+    "jsonwebtoken": "^8.3.0",
+    "eslint": "^5.7.0"
+  },
   "devDependencies": {
     "babel-jest": "^23.6.0",
     "babel-preset-env": "^1.7.0",
@@ -14,10 +18,6 @@
   "scripts": {
     "test": "jest",
     "lint": "eslint *.js"
-  },
-  "dependencies": {
-    "jsonwebtoken": "^8.3.0",
-    "eslint": "^5.7.0"
   },
   "jest": {
     "moduleNameMapper": {

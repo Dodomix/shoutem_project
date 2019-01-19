@@ -107,7 +107,7 @@ export default class CommunicatorChild {
     return this._callApi('/api/token').then(body => {
       return body.token;
     }).catch(err => {
-      this.handlers.onFetchTokenFailed(err.message.substr(4));
+      this.handlers.onFetchTokenFailed(err.message);
     });
   }
 
