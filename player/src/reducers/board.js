@@ -2,9 +2,7 @@ import Chess from 'react-chess';
 import {
   HANDLE_DRAG_PIECE,
   HANDLE_MOVE_PIECE,
-  SET_BOARD_STATE,
-  TOGGLE_SENT_TOKEN,
-  TOGGLE_ALLOW_MOVE_OTHER_PLAYER
+  SET_BOARD_STATE
 } from '../actions/actionConstants';
 
 const initialState = {
@@ -48,14 +46,6 @@ const board = (state = initialState, action) => {
         isWhitePlayer: action.state.isWhitePlayer,
         isBlackPlayer: action.state.isBlackPlayer,
         piece: null
-      });
-    case TOGGLE_SENT_TOKEN:
-      return Object.assign({}, state, {
-        sendOtherToken: !state.sendOtherToken
-      });
-    case TOGGLE_ALLOW_MOVE_OTHER_PLAYER:
-      return Object.assign({}, state, {
-        allowMoveOtherPlayer: !state.allowMoveOtherPlayer
       });
     default:
       return state;

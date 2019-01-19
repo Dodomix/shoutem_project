@@ -4,17 +4,19 @@
   "scripts": {
     "client": "cd client && yarn start",
     "player": "cd player && yarn start",
-    "component-server": "nodemon component-server.js",
+    "server": "nodemon server.js",
     "setup-communicator": "cd communicator && yarn install",
     "setup-client": "cd client && yarn install",
     "setup-player": "cd player && yarn install",
     "setup": "yarn install && yarn setup-communicator && yarn setup-client && yarn setup-player",
-    "dev": "concurrently --kill-others-on-fail \"yarn component-server\" \"yarn client\" \"PORT=3001 yarn player\" \"PORT=3002 yarn player\""
+    "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn player\""
   },
   "dependencies": {
     "body-parser": "^1.18.3",
+    "chess.js": "^0.10.2",
     "express": "^4.16.3",
-    "jsonwebtoken": "^8.3.0"
+    "jsonwebtoken": "^8.3.0",
+    "websocket": "^1.0.28"
   },
   "devDependencies": {
     "concurrently": "^3.6.0"
