@@ -1,0 +1,20 @@
+.App {
+    text-align: center;
+}
+
+.error-message {
+    color: red;
+}
+
+.game-status {
+    text-align: left;
+}
+
+.title {
+    text-align: left;
+    margin: 5px;
+}
+
+label {
+    height: 30px;
+}

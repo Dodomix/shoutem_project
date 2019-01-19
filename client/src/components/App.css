@@ -1,0 +1,33 @@
+.App {
+    text-align: center;
+}
+
+#player1, #player2 {
+    width: 500px;
+    height: 700px;
+}
+
+#loader {
+    height: 100px;
+    width: 100px;
+    vertical-align: middle;
+}
+
+.background {
+    background: rgba(0, 0, 0, 0.3);
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.aligning-block {
+    display: inline-block;
+    vertical-align: middle;
+    height: 100%;
+}
+
+.reset-button {
+    float: right;
+}
