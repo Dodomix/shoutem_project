@@ -18,9 +18,9 @@ class App extends Component {
       return;
     }
 
-    const ws = new WebSocket('ws://localhost:8000');
+    const ws = new WebSocket(`ws://${window.location.hostname}:8000`);
 
-    ws.onopen = e => console.log('Connected!', e);
+    ws.onopen = e => console.log('Connected!');
     ws.onmessage = e => {
       const parsedData = JSON.parse(e.data);
       if (parsedData.error) {
@@ -88,27 +88,29 @@ class App extends Component {
       alert('This browser does not support WebSocket spec.');
     }
 
-    return (
-      <div className="App" style={{width: '700px'}}>
-        {
-          !browserInvalid &&
-          <div>
-            <h2 className="game-status">{this.props.gameStatus}</h2>
-            {
-              (this.props.isWhitePlayer || this.props.isBlackPlayer) &&
-              <h3 className="title">{this._getPlayer() === 'white' ? 'Player 1 (white)' : 'Player 2 (black)'}</h3>
-            }
-            <h3 className="title">Turn: {this.props.currentPlayer}</h3>
-            <Chess pieces={this.props.pieces} onMovePiece={this.props.handleMovePiece} onDragStart={this._handleDrag.bind(this)}/>
-            <Button onClick={this._executeMove.bind(this)}>Submit</Button>
-          </div>
-        }
-        {
-          browserInvalid &&
-          <div>This browser does not support the WebSocket spec.</div>
-        }
-      </div>
-    );
+    return <div className="App">
+      {
+        !browserInvalid &&
+        <div>
+          <h2 className="game-status">{this.props.gameStatus}</h2>
+          {
+            (this.props.isWhitePlayer || this.props.isBlackPlayer) &&
+            <h3 className="title">{this._getPlayer() === 'white' ? 'Player 1 (white)' : 'Player 2 (black)'}</h3>
+          }
+          {
+            (!this.props.isWhitePlayer && !this.props.isBlackPlayer) &&
+            <h3 className="title">Spectator</h3>
+          }
+          <h3 className="title">Turn: {this.props.currentPlayer}</h3>
+          <Chess pieces={this.props.pieces} onMovePiece={this.props.handleMovePiece} onDragStart={this._handleDrag.bind(this)}/>
+          <Button onClick={this._executeMove.bind(this)}>Submit</Button>
+        </div>
+      }
+      {
+        browserInvalid &&
+        <div>This browser does not support the WebSocket spec.</div>
+      }
+    </div>;
   }
 }
 
